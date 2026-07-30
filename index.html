@@ -1,0 +1,2228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Rays Builders - Sale & Purchase App</title>
+<style>
+:root {
+  --navy: #1A365D;
+  --green: #2F855A;
+  --green-light: #E6F4EC;
+  --blue: #2563EB;
+  --blue-light: #E8F0FE;
+  --amber: #D69E2E;
+  --amber-light: #FBF1DC;
+  --red: #DC2626;
+  --red-light: #FDECEC;
+  --surface-2: #F8FAFC;
+  --border: #E2E8F0;
+  --text: #0F172A;
+  --text-muted: #64748B;
+  --radius: 10px;
+}
+* { box-sizing: border-box; }
+body { margin: 0; font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif; background: var(--surface-2); color: var(--text); }
+a { color: inherit; text-decoration: none; cursor: pointer; }
+.app-shell { max-width: 480px; margin: 0 auto; min-height: 100vh; background: #fff; display: flex; flex-direction: column; }
+.topbar { background: var(--navy); color: #fff; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; }
+.topbar .brand { font-size: 16px; font-weight: 600; }
+.topbar .role-badge { font-size: 12px; background: rgba(255,255,255,0.15); padding: 3px 10px; border-radius: 20px; }
+.navbar { display: flex; gap: 4px; padding: 8px; border-bottom: 1px solid var(--border); overflow-x: auto; }
+.navbar a { flex: 1; text-align: center; font-size: 12px; padding: 8px 4px; border-radius: 8px; color: var(--text-muted); white-space: nowrap; }
+.navbar a.active { background: var(--navy); color: #fff; }
+.content { padding: 16px; flex: 1; }
+.card { background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 12px; }
+.card-title { font-size: 12px; color: var(--text-muted); margin: 0 0 8px; text-transform: uppercase; letter-spacing: 0.03em; }
+.row-between { display: flex; justify-content: space-between; align-items: center; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.qa-btn { border: none; border-radius: var(--radius); padding: 16px 10px; font-size: 13px; font-weight: 600; text-align: left; cursor: pointer; display: block; }
+.qa-green { background: var(--green-light); color: var(--green); }
+.qa-blue { background: var(--blue-light); color: var(--blue); }
+.qa-amber { background: var(--amber-light); color: #7a5a10; }
+.qa-gray { background: #F1F5F9; color: var(--navy); }
+label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 4px; margin-top: 10px; }
+input, select { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; background: #fff; color: var(--text); }
+input:focus, select:focus { outline: none; border-color: var(--navy); }
+button { font-family: inherit; }
+button.primary { background: var(--navy); color: #fff; border: none; padding: 12px; border-radius: 8px; font-size: 14px; font-weight: 600; width: 100%; cursor: pointer; margin-top: 14px; }
+button.secondary { background: #fff; color: var(--navy); border: 1px solid var(--border); padding: 12px; border-radius: 8px; font-size: 14px; font-weight: 600; width: 100%; cursor: pointer; margin-top: 8px; }
+button.danger { background: var(--red-light); color: var(--red); border: 1px solid #fca5a5; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; width: 100%; margin-top: 8px; }
+.type-toggle { display: flex; gap: 6px; margin-bottom: 12px; }
+.type-toggle button { flex: 1; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: #fff; font-size: 13px; font-weight: 600; cursor: pointer; color: var(--text-muted); margin-top: 0; }
+.type-toggle button.active.cash { background: var(--green-light); color: var(--green); border-color: var(--green); }
+.type-toggle button.active.measure { background: var(--blue-light); color: var(--blue); border-color: var(--blue); }
+.v-type-btn.active.receipt { background: var(--green-light); color: var(--green); border-color: var(--green); }
+.v-type-btn.active.payment { background: var(--red-light); color: var(--red); border-color: var(--red); }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--border); }
+th { color: var(--text-muted); font-weight: 600; font-size: 11px; text-transform: uppercase; }
+.badge { font-size: 11px; padding: 2px 8px; border-radius: 20px; font-weight: 600; }
+.badge-green { background: var(--green-light); color: var(--green); }
+.badge-amber { background: var(--amber-light); color: #7a5a10; }
+.badge-red { background: var(--red-light); color: var(--red); }
+.badge-gray { background: #F1F5F9; color: var(--text-muted); }
+.total-box { border-radius: 8px; padding: 10px 12px; display: flex; justify-content: space-between; font-size: 15px; font-weight: 700; margin-top: 10px; }
+.error-text { color: var(--red); font-size: 13px; margin-top: 8px; }
+.item-line { border: 1px solid var(--border); border-radius: 8px; padding: 10px; margin-top: 8px; position: relative; }
+.item-line .remove { position: absolute; top: 8px; right: 8px; background: none; border: none; color: var(--red); cursor: pointer; font-size: 12px; }
+.print-only { display: none; }
+.small-input { width: 60px !important; display: inline-block; }
+.center-msg { text-align: center; color: var(--text-muted); font-size: 13px; padding: 20px 0; }
+@media print {
+  .no-print { display: none !important; }
+  .print-only { display: block; }
+  .app-shell { max-width: 100%; }
+}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+// ===== Local "database" backed by localStorage (with in-memory fallback) =====
+const LS_PREFIX = "rb_";
+
+// Some browsers restrict localStorage for file:// pages (or when opened from
+// a zip/downloads folder with strict privacy settings). If that happens we
+// silently fall back to an in-memory store so the app still works for the
+// current tab - it just won't remember data after the tab is closed.
+const memoryStore = {};
+let storageWorks = true;
+try {
+  const testKey = LS_PREFIX + "__test__";
+  localStorage.setItem(testKey, "1");
+  localStorage.removeItem(testKey);
+} catch (e) {
+  storageWorks = false;
+}
+
+const storage = {
+  getItem(key) {
+    if (storageWorks) {
+      try { return localStorage.getItem(key); } catch (e) { storageWorks = false; }
+    }
+    return Object.prototype.hasOwnProperty.call(memoryStore, key) ? memoryStore[key] : null;
+  },
+  setItem(key, value) {
+    if (storageWorks) {
+      try { localStorage.setItem(key, value); return; } catch (e) { storageWorks = false; }
+    }
+    memoryStore[key] = String(value);
+  },
+  removeItem(key) {
+    if (storageWorks) {
+      try { localStorage.removeItem(key); return; } catch (e) { storageWorks = false; }
+    }
+    delete memoryStore[key];
+  },
+};
+
+function readTable(name) {
+  const raw = storage.getItem(LS_PREFIX + name);
+  if (!raw) return [];
+  try { return JSON.parse(raw); } catch (e) { return []; }
+}
+function writeTable(name, rows) {
+  storage.setItem(LS_PREFIX + name, JSON.stringify(rows));
+}
+function nextId(name) {
+  const rows = readTable(name);
+  return rows.reduce((m, r) => (r.id > m ? r.id : m), 0) + 1;
+}
+function insert(name, row) {
+  const rows = readTable(name);
+  const rec = { id: nextId(name), ...row };
+  rows.push(rec);
+  writeTable(name, rows);
+  return rec;
+}
+function update(name, id, patch) {
+  const rows = readTable(name);
+  const idx = rows.findIndex((r) => r.id === id);
+  if (idx === -1) return null;
+  rows[idx] = { ...rows[idx], ...patch };
+  writeTable(name, rows);
+  return rows[idx];
+}
+function findById(name, id) {
+  return readTable(name).find((r) => r.id === id) || null;
+}
+function logAudit({ action, entity, entityId, userId, userName, detail }) {
+  insert("audit_log", { action, entity, entityId, userId, userName, detail, timestamp: new Date().toISOString() });
+}
+
+function todayStr() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function nextBillNo() {
+  const counters = readTable("counters");
+  const c = counters.find((x) => x.key === "bill_no");
+  const newVal = (c ? c.value : 567) + 1;
+  if (c) update("counters", c.id, { value: newVal });
+  else insert("counters", { key: "bill_no", value: newVal });
+  return newVal;
+}
+
+function nextVoucherNo() {
+  const counters = readTable("counters");
+  const c = counters.find((x) => x.key === "voucher_no");
+  const newVal = (c ? c.value : 100) + 1;
+  if (c) update("counters", c.id, { value: newVal });
+  else insert("counters", { key: "voucher_no", value: newVal });
+  return newVal;
+}
+
+function removeLedgerEntriesForBill(billId) {
+  const entries = readTable("ledger_entries");
+  const next = entries.filter((l) => !(l.refType === "bill" && l.refId === billId));
+  writeTable("ledger_entries", next);
+}
+
+function findOrCreateCustomer(name, phone) {
+  const clean = String(name || "").trim();
+  if (!clean) return null;
+  const customers = readTable("customers");
+  const existing = customers.find((c) => c.name.toLowerCase() === clean.toLowerCase());
+  if (existing) return existing;
+  return insert("customers", { name: clean, phone: phone || "", createdAt: new Date().toISOString() });
+}
+
+function findOrCreateSupplier(name, phone) {
+  const clean = String(name || "").trim();
+  if (!clean) return null;
+  const suppliers = readTable("suppliers");
+  const existing = suppliers.find((s) => s.name.toLowerCase() === clean.toLowerCase());
+  if (existing) return existing;
+  return insert("suppliers", { name: clean, phone: phone || "", createdAt: new Date().toISOString() });
+}
+
+const EDIT_WINDOW_MS = 10 * 60 * 1000;
+function canEditBill(user, bill) {
+  if (!user) return false;
+  if (user.role === "admin") return true;
+  if (user.canEditBills) return true;
+  if (bill.createdBy === user.id) {
+    const age = Date.now() - new Date(bill.createdAt).getTime();
+    return age <= EDIT_WINDOW_MS;
+  }
+  return false;
+}
+
+// ===== Session =====
+function getCurrentUser() {
+  const id = storage.getItem(LS_PREFIX + "current_user_id");
+  if (!id) return null;
+  const u = findById("users", Number(id));
+  if (!u) return null;
+  const { pin, ...safe } = u;
+  return safe;
+}
+function setCurrentUserId(id) {
+  if (id === null) storage.removeItem(LS_PREFIX + "current_user_id");
+  else storage.setItem(LS_PREFIX + "current_user_id", String(id));
+}
+
+// ===== Seed data (first run only) =====
+function seedIfEmpty() {
+  if (readTable("users").length > 0) return;
+  writeTable("users", [
+    { id: 1, name: "Admin", username: "admin", role: "admin", pin: "1234",
+      canDiscount: true, canEditBills: true, canViewProfit: true, canAddStock: true },
+    { id: 2, name: "Ali (Salesman)", username: "ali", role: "user", pin: "1111",
+      canDiscount: false, canEditBills: false, canViewProfit: false, canAddStock: false },
+  ]);
+  writeTable("items", [
+    { id: 1, name: "Cement Bag", type: "quantity", unit: "bag", stock: 320, lowThreshold: 50, defaultRate: 1200 },
+    { id: 2, name: "Door Handle", type: "quantity", unit: "pcs", stock: 15, lowThreshold: 20, defaultRate: 450 },
+    { id: 3, name: "Marble Tile", type: "measurement", unit: "sqft", stock: 4200, lowThreshold: 300, defaultRate: 180 },
+    { id: 4, name: "Glass Sheet", type: "measurement", unit: "sqft", stock: 850, lowThreshold: 150, defaultRate: 200 },
+  ]);
+  writeTable("labour", [
+    { id: 1, name: "Ahmad Khan", contact: "0300-1112222", rateType: "sqft", rate: 15 },
+    { id: 2, name: "Bilal Tile Worker", contact: "0300-3334444", rateType: "daily", rate: 1500 },
+  ]);
+  writeTable("bills", []);
+  writeTable("labour_entries", []);
+  writeTable("audit_log", []);
+  writeTable("sessions", []);
+  writeTable("counters", [{ id: 1, key: "bill_no", value: 567 }]);
+}
+
+// ===== Local API dispatcher (mirrors the same routes/behaviour as a real backend) =====
+function localApi(pathname, { method, body, query }) {
+  query = query || {};
+  const user = getCurrentUser();
+
+  if (pathname === "/api/auth/login" && method === "POST") {
+    const { username, pin } = body;
+    const users = readTable("users");
+    const u = users.find((x) => x.username === String(username || "").toLowerCase().trim());
+    if (!u || String(u.pin).trim() !== String(pin || "").trim()) {
+      return { status: 401, data: { error: "Username ya PIN ghalat hai" } };
+    }
+    setCurrentUserId(u.id);
+    const { pin: _p, ...safe } = u;
+    return { status: 200, data: { ok: true, user: safe } };
+  }
+
+  if (pathname === "/api/auth/logout" && method === "POST") {
+    setCurrentUserId(null);
+    return { status: 200, data: { ok: true } };
+  }
+
+  if (pathname === "/api/auth/me" && method === "GET") {
+    return { status: 200, data: { user } };
+  }
+
+  if (!user) return { status: 401, data: { error: "Login zaroori hai" } };
+
+  if (pathname === "/api/items" && method === "GET") {
+    return { status: 200, data: { items: readTable("items") } };
+  }
+  if (pathname === "/api/items" && method === "POST") {
+    if (user.role !== "admin" && !user.canAddStock) {
+      return { status: 403, data: { error: "Aapko naya item add karne ki ijazat nahi hai" } };
+    }
+    const { name, type, unit, stock, lowThreshold, defaultRate } = body;
+    if (!name || !type) return { status: 400, data: { error: "Item name aur type zaroori hai" } };
+    const item = insert("items", {
+      name, type, unit: unit || (type === "measurement" ? "sqft" : "pcs"),
+      stock: Number(stock) || 0, lowThreshold: Number(lowThreshold) || 0, defaultRate: Number(defaultRate) || 0,
+    });
+    logAudit({ action: "item_added", entity: "item", entityId: item.id, userId: user.id, userName: user.name,
+      detail: `Naya item add kiya: ${name} (${item.stock} ${item.unit})` });
+    return { status: 200, data: { item } };
+  }
+
+  let m = pathname.match(/^\/api\/items\/(\d+)$/);
+  if (m && method === "PATCH") {
+    if (user.role !== "admin" && !user.canAddStock) {
+      return { status: 403, data: { error: "Aapko stock adjust karne ki ijazat nahi hai" } };
+    }
+    const id = Number(m[1]);
+    const item = findById("items", id);
+    if (!item) return { status: 404, data: { error: "Item nahi mila" } };
+    const { addStock, rate, lowThreshold, note, supplierName, supplierPhone, purchaseAmount } = body;
+    const patch = {};
+    if (addStock !== undefined) patch.stock = item.stock + Number(addStock);
+    if (rate !== undefined) patch.defaultRate = Number(rate);
+    if (lowThreshold !== undefined) patch.lowThreshold = Number(lowThreshold);
+    const updated = update("items", id, patch);
+
+    let supplier = null;
+    if (addStock !== undefined && supplierName && String(supplierName).trim()) {
+      supplier = findOrCreateSupplier(supplierName, supplierPhone);
+      const amt = Number(purchaseAmount) || 0;
+      if (supplier && amt > 0) {
+        insert("ledger_entries", {
+          date: todayStr(), partyType: "supplier", partyId: supplier.id, partyName: supplier.name,
+          type: "charge", amount: amt, note: note || `Stock-in: ${item.name} +${addStock} ${item.unit}`,
+          refType: "stockin", refId: id, createdBy: user.id, createdByName: user.name,
+          createdAt: new Date().toISOString(),
+        });
+      }
+    }
+
+    logAudit({ action: "stock_in", entity: "item", entityId: id, userId: user.id, userName: user.name,
+      detail: `${item.name}: ${addStock ? `+${addStock} ${item.unit} add kiya` : "update kiya"}${note ? " - " + note : ""}${supplier ? ` (Supplier: ${supplier.name})` : ""}` });
+    return { status: 200, data: { item: updated, supplier } };
+  }
+
+  if (pathname === "/api/bills" && method === "GET") {
+    return { status: 200, data: { bills: readTable("bills").sort((a, b) => b.id - a.id) } };
+  }
+  if (pathname === "/api/bills" && method === "POST") {
+    const { type, customerName, customerPhone, items, advance, gatePassNo } = body;
+    if (!customerName || !items || items.length === 0) {
+      return { status: 400, data: { error: "Customer naam aur kam az kam aik item zaroori hai" } };
+    }
+    const total = items.reduce((s, it) => s + Number(it.amount || 0), 0);
+    const advancePaid = Number(advance) || 0;
+    const billNo = nextBillNo();
+    const bill = insert("bills", {
+      billNo, type, customerName, customerPhone: customerPhone || "", gatePassNo: gatePassNo || "",
+      date: todayStr(), createdAt: new Date().toISOString(), items, total, advance: advancePaid,
+      due: total - advancePaid, createdBy: user.id, createdByName: user.name, status: "saved",
+      editedAt: null, editedBy: null,
+    });
+    for (const line of items) {
+      if (!line.itemId) continue;
+      const item = findById("items", Number(line.itemId));
+      if (!item) continue;
+      const deduct = item.type === "measurement" ? Number(line.sqft || 0) : Number(line.qty || 0);
+      update("items", item.id, { stock: item.stock - deduct });
+    }
+
+    const customer = findOrCreateCustomer(customerName, customerPhone);
+    if (customer) {
+      insert("ledger_entries", {
+        date: todayStr(), partyType: "customer", partyId: customer.id, partyName: customer.name,
+        type: "charge", amount: total, note: `Bill #${billNo}`, refType: "bill", refId: bill.id,
+        createdBy: user.id, createdByName: user.name, createdAt: new Date().toISOString(),
+      });
+      if (advancePaid > 0) {
+        insert("ledger_entries", {
+          date: todayStr(), partyType: "customer", partyId: customer.id, partyName: customer.name,
+          type: "payment", amount: advancePaid, note: `Advance on Bill #${billNo}`, refType: "bill", refId: bill.id,
+          createdBy: user.id, createdByName: user.name, createdAt: new Date().toISOString(),
+        });
+      }
+    }
+
+    logAudit({ action: "bill_created", entity: "bill", entityId: bill.id, userId: user.id, userName: user.name,
+      detail: `Bill #${billNo} banaya (${type}) - ${customerName} - Total Rs ${total}` });
+    return { status: 200, data: { bill } };
+  }
+
+  m = pathname.match(/^\/api\/bills\/(\d+)$/);
+  if (m && method === "GET") {
+    const bill = findById("bills", Number(m[1]));
+    if (!bill) return { status: 404, data: { error: "Bill nahi mila" } };
+    const editable = canEditBill(user, bill) && bill.status !== "cancelled";
+    return { status: 200, data: { bill, canEdit: editable, canCancel: user.role === "admin" && bill.status !== "cancelled" } };
+  }
+  if (m && method === "PATCH") {
+    const id = Number(m[1]);
+    const bill = findById("bills", id);
+    if (!bill) return { status: 404, data: { error: "Bill nahi mila" } };
+    if (bill.status === "cancelled") return { status: 400, data: { error: "Cancelled bill edit nahi ho sakta" } };
+    if (!canEditBill(user, bill)) return { status: 403, data: { error: "Aapka edit ka waqt khatam ho gaya ya ijazat nahi hai" } };
+    const { items, advance, customerName, customerPhone } = body;
+    for (const oldLine of bill.items) {
+      if (!oldLine.itemId) continue;
+      const item = findById("items", Number(oldLine.itemId));
+      if (!item) continue;
+      const restoreAmount = item.type === "measurement" ? Number(oldLine.sqft || 0) : Number(oldLine.qty || 0);
+      update("items", item.id, { stock: item.stock + restoreAmount });
+    }
+    const newTotal = items.reduce((s, it) => s + Number(it.amount || 0), 0);
+    const newAdvance = Number(advance) || 0;
+    for (const line of items) {
+      if (!line.itemId) continue;
+      const item = findById("items", Number(line.itemId));
+      if (!item) continue;
+      const deduct = item.type === "measurement" ? Number(line.sqft || 0) : Number(line.qty || 0);
+      update("items", item.id, { stock: item.stock - deduct });
+    }
+    const updated = update("bills", id, {
+      items, total: newTotal, advance: newAdvance, due: newTotal - newAdvance,
+      customerName: customerName || bill.customerName,
+      customerPhone: customerPhone !== undefined ? customerPhone : bill.customerPhone,
+      editedAt: new Date().toISOString(), editedBy: user.name,
+    });
+
+    removeLedgerEntriesForBill(id);
+    const editCustomer = findOrCreateCustomer(updated.customerName, updated.customerPhone);
+    if (editCustomer) {
+      insert("ledger_entries", {
+        date: bill.date, partyType: "customer", partyId: editCustomer.id, partyName: editCustomer.name,
+        type: "charge", amount: newTotal, note: `Bill #${bill.billNo} (edited)`, refType: "bill", refId: id,
+        createdBy: user.id, createdByName: user.name, createdAt: new Date().toISOString(),
+      });
+      if (newAdvance > 0) {
+        insert("ledger_entries", {
+          date: bill.date, partyType: "customer", partyId: editCustomer.id, partyName: editCustomer.name,
+          type: "payment", amount: newAdvance, note: `Advance on Bill #${bill.billNo} (edited)`, refType: "bill", refId: id,
+          createdBy: user.id, createdByName: user.name, createdAt: new Date().toISOString(),
+        });
+      }
+    }
+
+    logAudit({ action: "bill_edited", entity: "bill", entityId: id, userId: user.id, userName: user.name,
+      detail: `Bill #${bill.billNo} edit kiya. Total Rs ${bill.total} -> Rs ${newTotal}. Stock/ledger auto-adjusted.` });
+    return { status: 200, data: { bill: updated } };
+  }
+  if (m && method === "DELETE") {
+    const id = Number(m[1]);
+    const bill = findById("bills", id);
+    if (!bill) return { status: 404, data: { error: "Bill nahi mila" } };
+    if (!canEditBill(user, bill)) return { status: 403, data: { error: "Cancel karne ki ijazat nahi hai" } };
+    if (bill.status === "cancelled") return { status: 400, data: { error: "Bill pehle se cancel hai" } };
+    for (const line of bill.items) {
+      if (!line.itemId) continue;
+      const item = findById("items", Number(line.itemId));
+      if (!item) continue;
+      const restoreAmount = item.type === "measurement" ? Number(line.sqft || 0) : Number(line.qty || 0);
+      update("items", item.id, { stock: item.stock + restoreAmount });
+    }
+    const updated = update("bills", id, { status: "cancelled", editedAt: new Date().toISOString(), editedBy: user.name });
+    removeLedgerEntriesForBill(id);
+    logAudit({ action: "bill_cancelled", entity: "bill", entityId: id, userId: user.id, userName: user.name,
+      detail: `Bill #${bill.billNo} cancel kiya. Stock aur customer khata dono wapas restore ho gaye.` });
+    return { status: 200, data: { bill: updated } };
+  }
+
+  if (pathname === "/api/labour" && method === "GET") {
+    return { status: 200, data: { labour: readTable("labour") } };
+  }
+  if (pathname === "/api/labour" && method === "POST") {
+    if (user.role !== "admin") return { status: 403, data: { error: "Sirf Admin naya worker add kar sakta hai" } };
+    const { name, contact, rateType, rate } = body;
+    if (!name) return { status: 400, data: { error: "Naam zaroori hai" } };
+    const worker = insert("labour", { name, contact: contact || "", rateType: rateType || "sqft", rate: Number(rate) || 0 });
+    logAudit({ action: "labour_added", entity: "labour", entityId: worker.id, userId: user.id, userName: user.name,
+      detail: `Naya worker add kiya: ${name}` });
+    return { status: 200, data: { worker } };
+  }
+
+  if (pathname === "/api/labour-entries" && method === "GET") {
+    return { status: 200, data: { entries: readTable("labour_entries").sort((a, b) => b.id - a.id) } };
+  }
+  if (pathname === "/api/labour-entries" && method === "POST") {
+    const { labourId, workQty, rate, advance, billId, gatePassNo } = body;
+    const labour = findById("labour", Number(labourId));
+    if (!labour) return { status: 404, data: { error: "Worker nahi mila" } };
+    const advancePaid = Number(advance) || 0;
+    const grossAmount = Number(workQty || 0) * Number(rate || labour.rate);
+    const netPayable = grossAmount - advancePaid;
+    const entry = insert("labour_entries", {
+      labourId: labour.id, labourName: labour.name, date: todayStr(), workQty: Number(workQty) || 0,
+      rate: Number(rate) || labour.rate, grossAmount, advance: advancePaid, netPayable,
+      billId: billId || null, gatePassNo: gatePassNo || "",
+      createdBy: user.id, createdByName: user.name,
+    });
+    logAudit({ action: "labour_entry", entity: "labour", entityId: labour.id, userId: user.id, userName: user.name,
+      detail: `${labour.name} ke liye entry: ${workQty} @ ${rate} = Rs ${grossAmount}, Advance Rs ${advancePaid}, Net Rs ${netPayable}${billId ? ` (Bill #${billId} se linked)` : ""}` });
+    return { status: 200, data: { entry } };
+  }
+
+  if (pathname === "/api/users" && method === "GET") {
+    if (user.role !== "admin") return { status: 403, data: { error: "Sirf Admin dekh sakta hai" } };
+    const users = readTable("users").map(({ pin, ...safe }) => safe);
+    return { status: 200, data: { users } };
+  }
+  if (pathname === "/api/users" && method === "POST") {
+    if (user.role !== "admin") return { status: 403, data: { error: "Sirf Admin naya user bana sakta hai" } };
+    const { name, username, pin } = body;
+    if (!name || !username || !pin) return { status: 400, data: { error: "Naam, username aur PIN zaroori hai" } };
+    const existing = readTable("users").find((u) => u.username === String(username).toLowerCase());
+    if (existing) return { status: 400, data: { error: "Ye username pehle se mojood hai" } };
+    const newUser = insert("users", {
+      name, username: String(username).toLowerCase(), role: "user", pin: String(pin),
+      canDiscount: false, canEditBills: false, canViewProfit: false, canAddStock: false,
+    });
+    logAudit({ action: "user_created", entity: "user", entityId: newUser.id, userId: user.id, userName: user.name,
+      detail: `Naya salesman add kiya: ${name} (${username})` });
+    const { pin: _p, ...safe } = newUser;
+    return { status: 200, data: { user: safe } };
+  }
+
+  m = pathname.match(/^\/api\/users\/(\d+)$/);
+  if (m && method === "PATCH") {
+    if (user.role !== "admin") return { status: 403, data: { error: "Sirf Admin permissions badal sakta hai" } };
+    const id = Number(m[1]);
+    const target = findById("users", id);
+    if (!target) return { status: 404, data: { error: "User nahi mila" } };
+    const allowed = ["canDiscount", "canEditBills", "canViewProfit", "canAddStock"];
+    const patch = {};
+    for (const key of allowed) if (key in body) patch[key] = Boolean(body[key]);
+    const updated = update("users", id, patch);
+    logAudit({ action: "permissions_updated", entity: "user", entityId: id, userId: user.id, userName: user.name,
+      detail: `${target.name} ki permissions update ki: ${JSON.stringify(patch)}` });
+    const { pin: _p, ...safe } = updated;
+    return { status: 200, data: { user: safe } };
+  }
+
+  if (pathname === "/api/reports/summary" && method === "GET") {
+    if (user.role !== "admin") return { status: 403, data: { error: "Sirf Admin dekh sakta hai" } };
+    const bills = readTable("bills").filter((b) => b.status !== "cancelled");
+    const labourEntries = readTable("labour_entries");
+    const auditLog = readTable("audit_log").sort((a, b) => b.id - a.id).slice(0, 15);
+    const cashTotal = bills.filter((b) => b.type === "cash").reduce((s, b) => s + b.total, 0);
+    const measureTotal = bills.filter((b) => b.type === "measurement").reduce((s, b) => s + b.total, 0);
+    const totalDue = bills.reduce((s, b) => s + b.due, 0);
+    const labourPaid = labourEntries.reduce((s, e) => s + e.advance, 0);
+    const labourPending = labourEntries.reduce((s, e) => s + e.netPayable, 0);
+    return { status: 200, data: { cashTotal, measureTotal, totalDue, labourPaid, labourPending, auditLog } };
+  }
+
+  if (pathname === "/api/dashboard" && method === "GET") {
+    const bills = readTable("bills");
+    const items = readTable("items");
+    const labour = readTable("labour");
+    const labourEntries = readTable("labour_entries");
+    const today = todayStr();
+    const todaysBills = bills.filter((b) => b.date === today && b.status !== "cancelled");
+    const cashTotal = todaysBills.filter((b) => b.type === "cash").reduce((s, b) => s + b.total, 0);
+    const measureTotal = todaysBills.filter((b) => b.type === "measurement").reduce((s, b) => s + b.total, 0);
+    const todaysDue = todaysBills.reduce((s, b) => s + b.due, 0);
+    const todaysLabour = labourEntries.filter((e) => e.date === today);
+    const labourPayableToday = todaysLabour.reduce((s, e) => s + e.netPayable, 0);
+    const lowStockCount = items.filter((i) => i.stock <= i.lowThreshold).length;
+    return { status: 200, data: { cashTotal, measureTotal, todaysDue, labourWorkers: labour.length, labourPayableToday, lowStockCount } };
+  }
+
+  // ---- CUSTOMERS ----
+  if (pathname === "/api/customers" && method === "GET") {
+    const customers = readTable("customers");
+    const ledger = readTable("ledger_entries");
+    const withBalance = customers.map((c) => {
+      const entries = ledger.filter((l) => l.partyType === "customer" && l.partyId === c.id);
+      const charges = entries.filter((l) => l.type === "charge").reduce((s, l) => s + l.amount, 0);
+      const payments = entries.filter((l) => l.type === "payment").reduce((s, l) => s + l.amount, 0);
+      return { ...c, balance: charges - payments };
+    });
+    return { status: 200, data: { customers: withBalance } };
+  }
+  if (pathname === "/api/customers" && method === "POST") {
+    const { name, phone } = body;
+    if (!name) return { status: 400, data: { error: "Naam zaroori hai" } };
+    const customer = insert("customers", { name, phone: phone || "", createdAt: new Date().toISOString() });
+    logAudit({ action: "customer_added", entity: "customer", entityId: customer.id, userId: user.id, userName: user.name,
+      detail: `Naya customer add kiya: ${name}` });
+    return { status: 200, data: { customer } };
+  }
+  m = pathname.match(/^\/api\/customers\/(\d+)$/);
+  if (m && method === "GET") {
+    const id = Number(m[1]);
+    const customer = findById("customers", id);
+    if (!customer) return { status: 404, data: { error: "Customer nahi mila" } };
+    const ledger = readTable("ledger_entries").filter((l) => l.partyType === "customer" && l.partyId === id)
+      .sort((a, b) => new Date(a.date) - new Date(b.date) || a.id - b.id);
+    const charges = ledger.filter((l) => l.type === "charge").reduce((s, l) => s + l.amount, 0);
+    const payments = ledger.filter((l) => l.type === "payment").reduce((s, l) => s + l.amount, 0);
+    return { status: 200, data: { customer, ledger, balance: charges - payments } };
+  }
+
+  // ---- SUPPLIERS ----
+  if (pathname === "/api/suppliers" && method === "GET") {
+    const suppliers = readTable("suppliers");
+    const ledger = readTable("ledger_entries");
+    const withBalance = suppliers.map((s) => {
+      const entries = ledger.filter((l) => l.partyType === "supplier" && l.partyId === s.id);
+      const charges = entries.filter((l) => l.type === "charge").reduce((sum, l) => sum + l.amount, 0);
+      const payments = entries.filter((l) => l.type === "payment").reduce((sum, l) => sum + l.amount, 0);
+      return { ...s, balance: charges - payments };
+    });
+    return { status: 200, data: { suppliers: withBalance } };
+  }
+  if (pathname === "/api/suppliers" && method === "POST") {
+    if (user.role !== "admin") return { status: 403, data: { error: "Sirf Admin naya supplier add kar sakta hai" } };
+    const { name, phone } = body;
+    if (!name) return { status: 400, data: { error: "Naam zaroori hai" } };
+    const supplier = insert("suppliers", { name, phone: phone || "", createdAt: new Date().toISOString() });
+    logAudit({ action: "supplier_added", entity: "supplier", entityId: supplier.id, userId: user.id, userName: user.name,
+      detail: `Naya supplier add kiya: ${name}` });
+    return { status: 200, data: { supplier } };
+  }
+  m = pathname.match(/^\/api\/suppliers\/(\d+)$/);
+  if (m && method === "GET") {
+    const id = Number(m[1]);
+    const supplier = findById("suppliers", id);
+    if (!supplier) return { status: 404, data: { error: "Supplier nahi mila" } };
+    const ledger = readTable("ledger_entries").filter((l) => l.partyType === "supplier" && l.partyId === id)
+      .sort((a, b) => new Date(a.date) - new Date(b.date) || a.id - b.id);
+    const charges = ledger.filter((l) => l.type === "charge").reduce((s, l) => s + l.amount, 0);
+    const payments = ledger.filter((l) => l.type === "payment").reduce((s, l) => s + l.amount, 0);
+    return { status: 200, data: { supplier, ledger, balance: charges - payments } };
+  }
+
+  // ---- VOUCHERS (Receipt / Payment) ----
+  if (pathname === "/api/vouchers" && method === "GET") {
+    return { status: 200, data: { vouchers: readTable("vouchers").sort((a, b) => b.id - a.id) } };
+  }
+  if (pathname === "/api/vouchers" && method === "POST") {
+    const { type, partyType, partyId, partyName, amount, method: payMethod, note } = body;
+    if (!type || !amount || Number(amount) <= 0) {
+      return { status: 400, data: { error: "Type aur amount zaroori hai" } };
+    }
+    const voucherNo = nextVoucherNo();
+    const voucher = insert("vouchers", {
+      voucherNo, type, partyType: partyType || "other", partyId: partyId ? Number(partyId) : null,
+      partyName: partyName || "", amount: Number(amount), method: payMethod || "cash", note: note || "",
+      date: todayStr(), createdAt: new Date().toISOString(), createdBy: user.id, createdByName: user.name,
+    });
+
+    if (partyType === "customer" && partyId && type === "receipt") {
+      insert("ledger_entries", {
+        date: todayStr(), partyType: "customer", partyId: Number(partyId), partyName: partyName || "",
+        type: "payment", amount: Number(amount), note: note || "Receipt voucher",
+        refType: "voucher", refId: voucher.id, createdBy: user.id, createdByName: user.name,
+        createdAt: new Date().toISOString(),
+      });
+    }
+    if (partyType === "supplier" && partyId && type === "payment") {
+      insert("ledger_entries", {
+        date: todayStr(), partyType: "supplier", partyId: Number(partyId), partyName: partyName || "",
+        type: "payment", amount: Number(amount), note: note || "Payment voucher",
+        refType: "voucher", refId: voucher.id, createdBy: user.id, createdByName: user.name,
+        createdAt: new Date().toISOString(),
+      });
+    }
+
+    logAudit({ action: "voucher_created", entity: "voucher", entityId: voucher.id, userId: user.id, userName: user.name,
+      detail: `${type === "receipt" ? "Receipt" : "Payment"} voucher #${voucherNo}: Rs ${amount} (${partyName || "General"})` });
+    return { status: 200, data: { voucher } };
+  }
+
+  // ---- DAY BOOK ----
+  if (pathname === "/api/daybook" && method === "GET") {
+    const date = (query && query.date) || todayStr();
+    const bills = readTable("bills").filter((b) => b.date === date && b.status !== "cancelled");
+    const vouchers = readTable("vouchers").filter((v) => v.date === date);
+    const labourEntries = readTable("labour_entries").filter((e) => e.date === date);
+    const rows = [
+      ...bills.map((b) => ({
+        kind: "bill", time: b.createdAt, label: `Bill #${b.billNo} - ${b.customerName}`,
+        detail: b.type === "cash" ? "Cash Sale" : "Paimaish Sale", amount: b.total, direction: "in", refId: b.id,
+      })),
+      ...vouchers.map((v) => ({
+        kind: "voucher", time: v.createdAt, label: `${v.type === "receipt" ? "Receipt" : "Payment"} #${v.voucherNo} - ${v.partyName || "General"}`,
+        detail: v.note || v.method, amount: v.amount, direction: v.type === "receipt" ? "in" : "out", refId: v.id,
+      })),
+      ...labourEntries.map((e) => ({
+        kind: "labour", time: e.date, label: `Labour: ${e.labourName}`,
+        detail: `${e.workQty} @ ${e.rate}`, amount: e.netPayable, direction: "out", refId: e.id,
+      })),
+    ].sort((a, b) => new Date(a.time) - new Date(b.time));
+    return { status: 200, data: { date, rows } };
+  }
+
+  // ---- CASH BOOK ----
+  if (pathname === "/api/cashbook" && method === "GET") {
+    const vouchers = readTable("vouchers").filter((v) => v.method !== "bank").sort((a, b) => a.id - b.id);
+    let running = 0;
+    const rows = vouchers.map((v) => {
+      running += v.type === "receipt" ? v.amount : -v.amount;
+      return { ...v, runningBalance: running };
+    });
+    const totalIn = vouchers.filter((v) => v.type === "receipt").reduce((s, v) => s + v.amount, 0);
+    const totalOut = vouchers.filter((v) => v.type === "payment").reduce((s, v) => s + v.amount, 0);
+    return { status: 200, data: { rows, totalIn, totalOut, balance: totalIn - totalOut } };
+  }
+
+  return { status: 404, data: { error: "Route nahi mili" } };
+}
+
+// ===== Settings (Claude API key for the Parchi Scanner) =====
+function readSettings() {
+  const raw = storage.getItem(LS_PREFIX + "settings");
+  if (!raw) return { claudeApiKey: "" };
+  try { return JSON.parse(raw); } catch (e) { return { claudeApiKey: "" }; }
+}
+function writeSettings(patch) {
+  const current = readSettings();
+  const next = { ...current, ...patch };
+  storage.setItem(LS_PREFIX + "settings", JSON.stringify(next));
+  return next;
+}
+
+// ===== Parchi Scanner: sends a photo straight to Claude's Vision API from the =====
+// ===== browser using the user's own API key ("bring your own key" pattern). =====
+const CLAUDE_MODEL = "claude-haiku-4-5-20251001";
+
+async function scanParchiImage(base64Data, mediaType) {
+  const settings = readSettings();
+  const apiKey = (settings.claudeApiKey || "").trim();
+  if (!apiKey) {
+    const err = new Error("Pehle Settings mein Claude API key save karein.");
+    err.code = "NO_API_KEY";
+    throw err;
+  }
+
+  const prompt = `Ye aik haath se likhi gate pass / parchi ki tasveer hai jo aik marble/tile/chhat panel jaisay business ki hai. Is mein customer ka naam, gate pass number, aur paimaish (measurements - lambai x chaurai in feet, aur rate per sqft agar likha ho) hoti hai.
+
+Tasveer ko dhyan se parh kar sirf neeche diye gaye JSON format mein jawab dein, koi aur text na likhein:
+
+{
+  "customerName": "string ya null agar na mile",
+  "gatePassNo": "string ya null agar na mile",
+  "items": [
+    { "length": number, "width": number, "rate": number ya null agar rate na likha ho }
+  ]
+}
+
+Agar koi cheez clearly nahi parh sakte to us field ko null rakhein, andaza mat lagayein.`;
+
+  let res;
+  try {
+    res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": apiKey,
+        "anthropic-version": "2023-06-01",
+        "anthropic-dangerous-direct-browser-access": "true",
+      },
+      body: JSON.stringify({
+        model: CLAUDE_MODEL,
+        max_tokens: 1024,
+        messages: [{
+          role: "user",
+          content: [
+            { type: "image", source: { type: "base64", media_type: mediaType, data: base64Data } },
+            { type: "text", text: prompt },
+          ],
+        }],
+      }),
+    });
+  } catch (e) {
+    throw new Error("Internet / network mein masla hai. Dobara try karein.");
+  }
+
+  if (!res.ok) {
+    let msg = "Scan nahi ho saka (status " + res.status + ").";
+    if (res.status === 401) msg = "API key ghalat hai. Settings mein dobara check karein.";
+    if (res.status === 429) msg = "Thora ruk kar dobara try karein (rate limit).";
+    throw new Error(msg);
+  }
+
+  const data = await res.json();
+  const text = (data.content && data.content[0] && data.content[0].text) || "";
+  const match = text.match(/\{[\s\S]*\}/);
+  if (!match) throw new Error("Parchi se data nahi nikal saka. Manually likh lein.");
+
+  let parsed;
+  try {
+    parsed = JSON.parse(match[0]);
+  } catch (e) {
+    throw new Error("Parchi ka data samajh nahi aaya. Manually likh lein.");
+  }
+  if (!parsed.items) parsed.items = [];
+  return parsed;
+}
+
+// api() keeps the exact same async/throws contract the UI code already uses
+async function api(path, opts = {}) {
+  const [pathname, queryString] = path.split("?");
+  const query = {};
+  if (queryString) {
+    queryString.split("&").forEach((kv) => {
+      const [k, v] = kv.split("=");
+      query[decodeURIComponent(k)] = decodeURIComponent(v || "");
+    });
+  }
+  const result = localApi(pathname, { method: opts.method || "GET", body: opts.body, query });
+  if (result.status >= 400) {
+    const err = new Error(result.data.error || "Kuch ghalat ho gaya");
+    throw err;
+  }
+  return result.data;
+}
+
+const root = document.getElementById("root");
+let CURRENT_USER = null;
+let PENDING_SCAN_DRAFT = null;
+
+function fmtRs(n) {
+  const num = Math.round(Number(n) || 0);
+  return "Rs " + num.toLocaleString("en-IN");
+}
+
+function escapeHtml(str) {
+  return String(str).replace(/[&<>"']/g, (c) => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+  }[c]));
+}
+
+// api() is provided by logic.js (localStorage-backed, no network needed)
+
+function parseHash() {
+  let h = location.hash.slice(1) || "/login";
+  const [pathPart, queryPart] = h.split("?");
+  const query = {};
+  if (queryPart) {
+    queryPart.split("&").forEach((kv) => {
+      const [k, v] = kv.split("=");
+      query[decodeURIComponent(k)] = decodeURIComponent(v || "");
+    });
+  }
+  return { path: pathPart, query };
+}
+
+function navigate(hash) {
+  location.hash = hash;
+}
+
+const NAV_LINKS = [
+  { href: "#/dashboard", label: "Home", match: "/dashboard" },
+  { href: "#/bills/new", label: "Naya Bill", match: "/bills/new" },
+  { href: "#/bills", label: "Bills", match: "/bills" },
+  { href: "#/stock", label: "Stock", match: "/stock" },
+  { href: "#/labour", label: "Labour", match: "/labour" },
+  { href: "#/accounts", label: "Khata", match: "/accounts" },
+  { href: "#/customers", label: "Customers", match: "/customers" },
+  { href: "#/suppliers", label: "Suppliers", match: "/suppliers" },
+];
+
+function shell(contentHtml, activePath) {
+  const links = [...NAV_LINKS];
+  if (CURRENT_USER && CURRENT_USER.role === "admin") {
+    links.push({ href: "#/admin/users", label: "Users", match: "/admin/users" });
+    links.push({ href: "#/reports", label: "Reports", match: "/reports" });
+    links.push({ href: "#/settings", label: "Settings", match: "/settings" });
+  }
+  const navHtml = links
+    .map((l) => `<a href="${l.href}" class="${activePath.startsWith(l.match) ? "active" : ""}">${l.label}</a>`)
+    .join("");
+  const roleLabel = CURRENT_USER ? (CURRENT_USER.role === "admin" ? "Admin" : CURRENT_USER.name) : "";
+  root.innerHTML = `
+    <div class="app-shell">
+      <div class="topbar">
+        <span class="brand">Rays Builders</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="role-badge">${escapeHtml(roleLabel)}</span>
+          <button id="logout-btn" class="no-print" style="background:none;border:none;color:#fff;font-size:12px;cursor:pointer;opacity:0.85">Logout</button>
+        </div>
+      </div>
+      <div class="navbar no-print">${navHtml}</div>
+      <div class="content" id="view-content">${contentHtml}</div>
+    </div>
+  `;
+  document.getElementById("logout-btn").addEventListener("click", async () => {
+    await api("/api/auth/logout", { method: "POST" });
+    CURRENT_USER = null;
+    navigate("#/login");
+  });
+}
+
+// ---------- LOGIN ----------
+function renderLogin() {
+  root.innerHTML = `
+    <div class="app-shell">
+      <div class="topbar"><span class="brand">Rays Builders</span></div>
+      <div class="content" style="padding-top:60px">
+        <h2 style="text-align:center;margin-bottom:4px">Login Karein</h2>
+        <p style="text-align:center;color:var(--text-muted);font-size:13px;margin-bottom:24px">Apna username aur PIN darj karein</p>
+        <div class="card">
+          <label>Username</label>
+          <input id="li-username" placeholder="admin ya ali" autocomplete="off" autocapitalize="off" spellcheck="false" />
+          <label>PIN</label>
+          <input id="li-pin" type="password" inputmode="numeric" placeholder="4-digit PIN" autocomplete="off" />
+          <p class="error-text" id="li-error" style="display:none"></p>
+          <button class="primary" id="li-submit">Login</button>
+        </div>
+        <p style="font-size:12px;color:var(--text-muted);text-align:center;margin-top:16px">
+          Demo: admin / 1234 (Owner) &nbsp;|&nbsp; ali / 1111 (Salesman)
+        </p>
+      </div>
+    </div>
+  `;
+  const errEl = document.getElementById("li-error");
+  async function submit() {
+    errEl.style.display = "none";
+    const username = document.getElementById("li-username").value.trim();
+    const pin = document.getElementById("li-pin").value.trim();
+    try {
+      const data = await api("/api/auth/login", { method: "POST", body: { username, pin } });
+      CURRENT_USER = data.user;
+      navigate("#/dashboard");
+    } catch (e) {
+      errEl.textContent = e.message;
+      errEl.style.display = "block";
+    }
+  }
+  document.getElementById("li-submit").addEventListener("click", submit);
+  document.getElementById("li-pin").addEventListener("keydown", (e) => { if (e.key === "Enter") submit(); });
+}
+
+// ---------- DASHBOARD ----------
+async function renderDashboard() {
+  const [summary] = await Promise.all([api("/api/dashboard")]);
+  const html = `
+    <div class="grid-2" style="margin-bottom:12px">
+      <a href="#/bills/new?type=cash" class="qa-btn qa-green">Cash Sale<br><small>+ Naya Bill</small></a>
+      <a href="#/bills/new?type=measurement" class="qa-btn qa-blue">Paimaish Sale<br><small>+ Naya Bill</small></a>
+      <a href="#/scan" class="qa-btn qa-amber">Scan Parchi<br><small>Photo se Bill</small></a>
+      <a href="#/labour" class="qa-btn qa-gray">Labour Ledger<br><small>Khata Kholein</small></a>
+      <a href="#/stock" class="qa-btn qa-green">Stock<br><small>${summary.lowStockCount > 0 ? summary.lowStockCount + " item kam hai" : "Sab theek hai"}</small></a>
+    </div>
+    <div class="card">
+      <p class="card-title">Aaj Ki Summary</p>
+      <div class="row-between" style="margin-bottom:6px"><span>Cash Sale</span><strong>${fmtRs(summary.cashTotal)}</strong></div>
+      <div class="row-between" style="margin-bottom:6px"><span>Paimaish Sale</span><strong>${fmtRs(summary.measureTotal)}</strong></div>
+      <div class="row-between" style="padding-top:8px;border-top:1px solid var(--border)"><span>Total</span><strong>${fmtRs(summary.cashTotal + summary.measureTotal)}</strong></div>
+      <div class="row-between" style="margin-top:6px"><span>Baqaya (Aaj ke bills)</span><strong style="color:var(--red)">${fmtRs(summary.todaysDue)}</strong></div>
+    </div>
+    <div class="card">
+      <p class="card-title">Labour Overview</p>
+      <div class="row-between" style="margin-bottom:6px"><span>Total Workers</span><strong>${summary.labourWorkers}</strong></div>
+      <div class="row-between"><span>Aaj Ka Payable</span><strong>${fmtRs(summary.labourPayableToday)}</strong></div>
+    </div>
+    ${CURRENT_USER.role === "admin" ? `
+      <div class="card">
+        <p class="card-title">Admin Shortcuts</p>
+        <a href="#/reports" style="display:block;text-align:center;padding:10px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px">Profit &amp; Loss Reports</a>
+        <a href="#/admin/users" style="display:block;text-align:center;padding:10px;border:1px solid var(--border);border-radius:8px">Manage Users &amp; Permissions</a>
+      </div>` : ""}
+  `;
+  shell(html, "/dashboard");
+}
+
+
+// ---------- NEW BILL FORM ----------
+async function renderBillNew(initialType) {
+  const { items } = await api("/api/items");
+  const cashItems = items.filter((i) => i.type === "quantity");
+  const measureItems = items.filter((i) => i.type === "measurement");
+  let labourList = [];
+  try {
+    const labourData = await api("/api/labour");
+    labourList = labourData.labour;
+  } catch (e) {}
+
+  const labourOptions = labourList
+    .map((l) => `<option value="${l.id}" data-rate="${l.rate}" data-type="${l.rateType}">${escapeHtml(l.name)} (${l.rateType === "sqft" ? "per sqft" : "daily"})</option>`)
+    .join("");
+
+  const html = `
+    <div class="type-toggle">
+      <button type="button" id="tab-cash" class="cash">Cash Sale</button>
+      <button type="button" id="tab-measure" class="measure">Paimaish Sale</button>
+    </div>
+    <a href="#/scan" class="qa-btn qa-amber" style="display:block;margin-bottom:12px">Scan Parchi<br><small>Photo se bill bharein</small></a>
+    <div class="card">
+      <label>Grahak Ka Naam</label>
+      <input id="f-customer" placeholder="Customer ka naam" />
+      <label>Phone Number</label>
+      <input id="f-phone" placeholder="0300-1234567" />
+      <div id="gatepass-wrap" style="display:none">
+        <label>Gate Pass Number (optional)</label>
+        <input id="f-gatepass" placeholder="#568" />
+      </div>
+    </div>
+    <div class="card">
+      <p class="card-title">Items</p>
+      <div id="lines-container"></div>
+      <button type="button" class="secondary" id="add-line">+ Aur Item Add Karein</button>
+    </div>
+    <div class="card">
+      <div class="row-between"><span>Kul Rakam (Total)</span><strong id="grand-total">Rs 0</strong></div>
+      <label>Wasool Rakam (Advance)</label>
+      <input id="f-advance" type="number" value="0" />
+      <div class="total-box" id="due-box" style="background:var(--green-light);color:var(--green)"><span>Baqaya</span><span id="due-amount">Rs 0</span></div>
+    </div>
+    <div class="card" id="labour-card" style="display:none">
+      <p class="card-title">Chhat Labour Ka Khata (Optional)</p>
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text)">
+        <input type="checkbox" id="labour-enable" style="width:auto" />
+        Is bill ke sath labour ka kaam bhi darj karein
+      </label>
+      <div id="labour-fields" style="display:none">
+        ${labourList.length === 0 ? '<p style="font-size:12px;color:var(--text-muted)">Koi labour registered nahi hai.</p>' : `
+        <label>Worker</label>
+        <select id="labour-worker">${labourOptions}</select>
+        <div class="grid-2">
+          <div><label id="labour-qty-label">Sqft Kaam</label><input type="number" id="labour-qty" value="0" /></div>
+          <div><label>Rate</label><input type="number" id="labour-rate" value="${labourList[0]?.rate || 0}" /></div>
+        </div>
+        <label>Advance Diya</label>
+        <input type="number" id="labour-advance" value="0" />
+        <div class="total-box" style="background:var(--amber-light);color:#7a5a10"><span>Net Payable</span><span id="labour-net">Rs 0</span></div>
+        `}
+      </div>
+    </div>
+    <p class="error-text" id="form-error" style="display:none"></p>
+    <button class="primary" id="submit-bill">Save &amp; Cut Stock</button>
+  `;
+  shell(html, "/bills/new");
+
+  const labourCard = document.getElementById("labour-card");
+  const labourEnable = document.getElementById("labour-enable");
+  const labourFields = document.getElementById("labour-fields");
+  if (labourEnable) {
+    labourEnable.addEventListener("change", () => {
+      labourFields.style.display = labourEnable.checked ? "block" : "none";
+    });
+  }
+  if (labourList.length > 0) {
+    const lQty = document.getElementById("labour-qty");
+    const lRate = document.getElementById("labour-rate");
+    const lAdv = document.getElementById("labour-advance");
+    const lWorker = document.getElementById("labour-worker");
+    const lQtyLabel = document.getElementById("labour-qty-label");
+    function recalcLabour() {
+      const gross = (Number(lQty.value) || 0) * (Number(lRate.value) || 0);
+      const net = gross - (Number(lAdv.value) || 0);
+      document.getElementById("labour-net").textContent = fmtRs(net);
+    }
+    [lQty, lRate, lAdv].forEach((el) => el.addEventListener("input", recalcLabour));
+    lWorker.addEventListener("change", () => {
+      const opt = lWorker.selectedOptions[0];
+      lRate.value = opt.dataset.rate;
+      lQtyLabel.textContent = opt.dataset.type === "daily" ? "Din (Days)" : "Sqft Kaam";
+      recalcLabour();
+    });
+    recalcLabour();
+  }
+
+  let type = (cashItems.length === 0 && measureItems.length > 0) ? "measurement" : (initialType || "cash");
+  const linesContainer = document.getElementById("lines-container");
+  const gatepassWrap = document.getElementById("gatepass-wrap");
+  const advanceInput = document.getElementById("f-advance");
+
+  function currentItemSet() {
+    return type === "cash" ? cashItems : measureItems;
+  }
+
+  function updateLine(wrap) {
+    const rate = Number(wrap.querySelector(".line-rate").value) || 0;
+    let amount = 0;
+    if (type === "cash") {
+      const qty = Number(wrap.querySelector(".line-qty").value) || 0;
+      amount = qty * rate;
+    } else {
+      const length = Number(wrap.querySelector(".line-length").value) || 0;
+      const width = Number(wrap.querySelector(".line-width").value) || 0;
+      const sqft = length * width;
+      wrap.querySelector(".line-sqft").textContent = sqft;
+      wrap.dataset.sqft = sqft;
+      amount = sqft * rate;
+    }
+    wrap.dataset.amount = amount;
+    wrap.querySelector(".line-amount").textContent = fmtRs(amount);
+  }
+
+  function recalcAll() {
+    let total = 0;
+    linesContainer.querySelectorAll(".item-line").forEach((wrap) => {
+      total += Number(wrap.dataset.amount) || 0;
+    });
+    document.getElementById("grand-total").textContent = fmtRs(total);
+    const due = total - (Number(advanceInput.value) || 0);
+    const dueBox = document.getElementById("due-box");
+    document.getElementById("due-amount").textContent = fmtRs(due);
+    dueBox.style.background = due > 0 ? "var(--amber-light)" : "var(--green-light)";
+    dueBox.style.color = due > 0 ? "#7a5a10" : "var(--green)";
+    updateRemoveButtons();
+  }
+
+  function updateRemoveButtons() {
+    const lines = linesContainer.querySelectorAll(".item-line");
+    lines.forEach((l) => {
+      const btn = l.querySelector(".remove");
+      btn.style.display = lines.length > 1 ? "block" : "none";
+    });
+  }
+
+  function bindLineEvents(wrap) {
+    wrap.querySelectorAll("input").forEach((inp) => {
+      inp.addEventListener("input", () => { updateLine(wrap); recalcAll(); });
+    });
+    wrap.querySelector(".line-item").addEventListener("change", (e) => {
+      const opt = e.target.selectedOptions[0];
+      wrap.querySelector(".line-rate").value = opt.dataset.rate;
+      updateLine(wrap); recalcAll();
+    });
+    wrap.querySelector(".remove").addEventListener("click", () => {
+      if (linesContainer.querySelectorAll(".item-line").length <= 1) return;
+      wrap.remove();
+      recalcAll();
+    });
+  }
+
+  function addLine(overrides) {
+    overrides = overrides || {};
+    const set = currentItemSet();
+    const options = set.map((it) => `<option value="${it.id}" data-rate="${it.defaultRate}">${escapeHtml(it.name)} (Available: ${it.stock} ${it.unit})</option>`).join("");
+    const wrap = document.createElement("div");
+    wrap.className = "item-line";
+    if (type === "cash") {
+      wrap.innerHTML = `
+        <button type="button" class="remove">Remove</button>
+        <label>Item</label>
+        <select class="line-item">${options}</select>
+        <div class="grid-2">
+          <div><label>Qty</label><input type="number" class="line-qty" value="${overrides.qty || 1}" /></div>
+          <div><label>Rate</label><input type="number" class="line-rate" value="${set[0]?.defaultRate || 0}" /></div>
+        </div>
+        <p style="font-size:13px;text-align:right;margin:6px 0 0;font-weight:600" class="line-amount">Rs 0</p>
+      `;
+    } else {
+      wrap.innerHTML = `
+        <button type="button" class="remove">Remove</button>
+        <label>Item</label>
+        <select class="line-item">${options}</select>
+        <div class="grid-3">
+          <div><label>Lambai (ft)</label><input type="number" class="line-length" value="${overrides.length || 0}" /></div>
+          <div><label>Chaurai (ft)</label><input type="number" class="line-width" value="${overrides.width || 0}" /></div>
+          <div><label>Rate/sqft</label><input type="number" class="line-rate" value="${overrides.rate || set[0]?.defaultRate || 0}" /></div>
+        </div>
+        <p style="font-size:12px;color:var(--text-muted);margin:6px 0 0">Total Sqft: <strong class="line-sqft" style="color:var(--text)">0</strong></p>
+        <p style="font-size:13px;text-align:right;margin:6px 0 0;font-weight:600" class="line-amount">Rs 0</p>
+      `;
+    }
+    if (overrides.itemName) {
+      const select = wrap.querySelector(".line-item");
+      const match = [...select.options].find((o) =>
+        o.textContent.toLowerCase().includes(String(overrides.itemName).toLowerCase().split(" ")[0])
+      );
+      if (match) select.value = match.value;
+    }
+    linesContainer.appendChild(wrap);
+    bindLineEvents(wrap);
+    updateLine(wrap);
+    recalcAll();
+  }
+
+  function resetLines(overridesList) {
+    linesContainer.innerHTML = "";
+    if (overridesList && overridesList.length > 0) {
+      overridesList.forEach((o) => addLine(o));
+    } else {
+      addLine();
+    }
+  }
+
+  function setType(t) {
+    if (t === "cash" && cashItems.length === 0) return;
+    if (t === "measurement" && measureItems.length === 0) return;
+    type = t;
+    document.getElementById("tab-cash").classList.toggle("active", type === "cash");
+    document.getElementById("tab-cash").classList.toggle("cash", true);
+    document.getElementById("tab-measure").classList.toggle("active", type === "measurement");
+    gatepassWrap.style.display = type === "measurement" ? "block" : "none";
+    if (labourCard) labourCard.style.display = type === "measurement" ? "block" : "none";
+    resetLines();
+  }
+
+  document.getElementById("tab-cash").addEventListener("click", () => setType("cash"));
+  document.getElementById("tab-measure").addEventListener("click", () => setType("measurement"));
+  document.getElementById("add-line").addEventListener("click", addLine);
+  advanceInput.addEventListener("input", recalcAll);
+
+  setType(type);
+
+  if (PENDING_SCAN_DRAFT && type === "measurement") {
+    const draft = PENDING_SCAN_DRAFT;
+    PENDING_SCAN_DRAFT = null;
+    if (draft.customerName) document.getElementById("f-customer").value = draft.customerName;
+    if (draft.gatePassNo) document.getElementById("f-gatepass").value = draft.gatePassNo;
+    if (draft.items && draft.items.length > 0) {
+      resetLines(draft.items.map((it) => ({
+        length: it.length || 0,
+        width: it.width || 0,
+        rate: it.rate || measureItems[0]?.defaultRate || 0,
+      })));
+    }
+    const banner = document.createElement("p");
+    banner.style.cssText = "font-size:12px;color:var(--green);margin:-6px 0 10px";
+    banner.textContent = "Scan se data bhar diya gaya hai - verify kar ke save karein.";
+    document.querySelector(".type-toggle").insertAdjacentElement("afterend", banner);
+  }
+
+  document.getElementById("submit-bill").addEventListener("click", async () => {
+    const errEl = document.getElementById("form-error");
+    errEl.style.display = "none";
+    const customerName = document.getElementById("f-customer").value.trim();
+    const customerPhone = document.getElementById("f-phone").value.trim();
+    const gatePassNo = type === "measurement" ? document.getElementById("f-gatepass").value.trim() : "";
+    const advance = Number(advanceInput.value) || 0;
+
+    const lineEls = [...linesContainer.querySelectorAll(".item-line")];
+    const items = lineEls.map((wrap) => {
+      const select = wrap.querySelector(".line-item");
+      const itemId = Number(select.value);
+      const itemName = select.selectedOptions[0].textContent.split(" (Available")[0];
+      const rate = Number(wrap.querySelector(".line-rate").value) || 0;
+      if (type === "cash") {
+        const qty = Number(wrap.querySelector(".line-qty").value) || 0;
+        return { itemId, itemName, qty, rate, amount: qty * rate };
+      }
+      const length = Number(wrap.querySelector(".line-length").value) || 0;
+      const width = Number(wrap.querySelector(".line-width").value) || 0;
+      const sqft = length * width;
+      return { itemId, itemName, length, width, sqft, rate, amount: sqft * rate };
+    });
+
+    if (!customerName) { errEl.textContent = "Customer ka naam likhein"; errEl.style.display = "block"; return; }
+
+    try {
+      const data = await api("/api/bills", { method: "POST", body: { type, customerName, customerPhone, gatePassNo, advance, items } });
+
+      if (type === "measurement" && labourEnable && labourEnable.checked) {
+        const lWorker = document.getElementById("labour-worker");
+        const lQty = document.getElementById("labour-qty");
+        const lRate = document.getElementById("labour-rate");
+        const lAdv = document.getElementById("labour-advance");
+        try {
+          await api("/api/labour-entries", {
+            method: "POST",
+            body: {
+              labourId: Number(lWorker.value),
+              workQty: Number(lQty.value),
+              rate: Number(lRate.value),
+              advance: Number(lAdv.value),
+              billId: data.bill.id,
+              gatePassNo,
+            },
+          });
+        } catch (labourErr) {
+          alert("Bill save ho gaya, lekin labour entry save nahi ho saki: " + labourErr.message);
+        }
+      }
+
+      navigate(`#/bills/${data.bill.id}`);
+    } catch (e) {
+      errEl.textContent = e.message;
+      errEl.style.display = "block";
+    }
+  });
+}
+
+// ---------- BILLS LIST ----------
+async function renderBillsList() {
+  const { bills } = await api("/api/bills");
+  const rows = bills.map((b) => `
+    <a href="#/bills/${b.id}" class="card" style="display:block">
+      <div class="row-between">
+        <strong>#${b.billNo} &mdash; ${escapeHtml(b.customerName)}</strong>
+        <span class="badge ${b.status === "cancelled" ? "badge-red" : (b.type === "cash" ? "badge-green" : "badge-gray")}">
+          ${b.status === "cancelled" ? "Cancelled" : (b.type === "cash" ? "Cash" : "Paimaish")}
+        </span>
+      </div>
+      <div class="row-between" style="margin-top:6px;font-size:13px;color:var(--text-muted)">
+        <span>${b.date}</span>
+        <span>${fmtRs(b.total)}${b.due > 0 ? " (Baqaya " + fmtRs(b.due) + ")" : ""}</span>
+      </div>
+    </a>
+  `).join("");
+  const html = `
+    <p class="card-title">Bill History</p>
+    ${bills.length === 0 ? '<p class="center-msg">Abhi tak koi bill nahi bana.</p>' : rows}
+  `;
+  shell(html, "/bills");
+}
+
+// ---------- BILL DETAIL ----------
+async function renderBillDetail(id) {
+  const { bill, canEdit, canCancel } = await api(`/api/bills/${id}`);
+  let editing = false;
+  let lines = bill.items.map((l) => ({ ...l }));
+  let advance = bill.advance;
+
+  function computeTotal() {
+    return lines.reduce((s, l) => s + Number(l.amount || 0), 0);
+  }
+
+  function draw() {
+    const total = computeTotal();
+    const due = total - Number(advance || 0);
+
+    const rowsHtml = lines.map((l, idx) => {
+      const middleCell = bill.type === "cash"
+        ? (editing ? `<input type="number" class="small-input" data-idx="${idx}" data-field="qty" value="${l.qty}" />` : l.qty)
+        : (editing
+            ? `<span style="display:flex;gap:4px"><input type="number" class="small-input" style="width:45px !important" data-idx="${idx}" data-field="length" value="${l.length}" /> x <input type="number" class="small-input" style="width:45px !important" data-idx="${idx}" data-field="width" value="${l.width}" /></span>`
+            : `${l.length} x ${l.width} = ${l.sqft} sqft`);
+      const rateCell = editing
+        ? `<input type="number" class="small-input" data-idx="${idx}" data-field="rate" value="${l.rate}" />`
+        : l.rate;
+      return `<tr><td>${escapeHtml(l.itemName)}</td><td>${middleCell}</td><td>${rateCell}</td><td>${fmtRs(l.amount)}</td></tr>`;
+    }).join("");
+
+    const html = `
+      <div class="row-between no-print" style="margin-bottom:10px">
+        <strong>Bill #${bill.billNo}</strong>
+        <span class="badge ${bill.status === "cancelled" ? "badge-red" : "badge-green"}">${bill.status === "cancelled" ? "Cancelled" : "Saved"}</span>
+      </div>
+      ${!editing ? `
+      <div class="card no-print">
+        <div class="row-between"><span>Customer</span><strong>${escapeHtml(bill.customerName)}</strong></div>
+        <div class="row-between"><span>Phone</span><span>${escapeHtml(bill.customerPhone || "-")}</span></div>
+        <div class="row-between"><span>Date</span><span>${bill.date}</span></div>
+        <div class="row-between"><span>Type</span><span>${bill.type === "cash" ? "Cash Sale" : "Paimaish Sale"}</span></div>
+        ${bill.gatePassNo ? `<div class="row-between"><span>Gate Pass</span><span>#${escapeHtml(bill.gatePassNo)}</span></div>` : ""}
+        ${bill.editedAt ? `<div class="row-between" style="font-size:12px;color:var(--text-muted)"><span>Edited by</span><span>${escapeHtml(bill.editedBy)}</span></div>` : ""}
+      </div>` : ""}
+
+      <div class="card no-print">
+        <p class="card-title">Items</p>
+        <table>
+          <thead><tr><th>Item</th><th>${bill.type === "cash" ? "Qty" : "L x W"}</th><th>Rate</th><th>Amount</th></tr></thead>
+          <tbody>${rowsHtml}</tbody>
+        </table>
+        <div class="row-between" style="margin-top:10px"><span>Total</span><strong>${fmtRs(total)}</strong></div>
+        <div class="row-between" style="margin-top:4px">
+          <span>Advance</span>
+          ${editing ? `<input type="number" id="edit-advance" style="width:100px" value="${advance}" />` : `<strong>${fmtRs(bill.advance)}</strong>`}
+        </div>
+        <div class="total-box" style="background:var(--amber-light);color:#7a5a10"><span>Baqaya</span><span>${fmtRs(due)}</span></div>
+        ${editing ? '<p style="font-size:12px;color:var(--text-muted);margin-top:8px">Save karne par stock aur ledger difference automatically adjust ho jayega.</p>' : ""}
+        <p class="error-text" id="bill-error" style="display:none"></p>
+      </div>
+
+      <div class="no-print" style="display:flex;flex-direction:column;gap:8px">
+        ${!editing && bill.status !== "cancelled" ? `
+          <button class="primary" id="print-bill">Print Bill</button>
+          <button class="secondary" id="print-gatepass">Print Gate Pass</button>
+          ${canEdit ? '<button class="secondary" id="edit-bill">Edit Bill</button>' : ""}
+          ${canCancel ? '<button class="danger" id="cancel-bill">Cancel Bill</button>' : ""}
+        ` : ""}
+        ${editing ? `
+          <button class="primary" id="save-edit">Save Updated Bill</button>
+          <button class="secondary" id="cancel-edit">Cancel Edit</button>
+        ` : ""}
+      </div>
+
+      <div id="print-area"></div>
+    `;
+    shell(html, "/bills");
+    bindEvents();
+  }
+
+  function bindEvents() {
+    if (editing) {
+      document.querySelectorAll(".small-input").forEach((inp) => {
+        inp.addEventListener("input", (e) => {
+          const idx = Number(e.target.dataset.idx);
+          const field = e.target.dataset.field;
+          lines[idx][field] = Number(e.target.value) || 0;
+          if (bill.type === "measurement") {
+            lines[idx].sqft = Number(lines[idx].length || 0) * Number(lines[idx].width || 0);
+            lines[idx].amount = lines[idx].sqft * Number(lines[idx].rate || 0);
+          } else {
+            lines[idx].amount = Number(lines[idx].qty || 0) * Number(lines[idx].rate || 0);
+          }
+          draw();
+        });
+      });
+      const advInput = document.getElementById("edit-advance");
+      if (advInput) advInput.addEventListener("input", (e) => { advance = Number(e.target.value) || 0; draw(); });
+      document.getElementById("save-edit").addEventListener("click", saveEdit);
+      document.getElementById("cancel-edit").addEventListener("click", () => {
+        editing = false; lines = bill.items.map((l) => ({ ...l })); advance = bill.advance; draw();
+      });
+    } else if (bill.status !== "cancelled") {
+      document.getElementById("print-bill")?.addEventListener("click", () => doPrint("bill"));
+      document.getElementById("print-gatepass")?.addEventListener("click", () => doPrint("gatepass"));
+      document.getElementById("edit-bill")?.addEventListener("click", () => { editing = true; draw(); });
+      document.getElementById("cancel-bill")?.addEventListener("click", cancelBill);
+    }
+  }
+
+  async function saveEdit() {
+    const errEl = document.getElementById("bill-error");
+    try {
+      const data = await api(`/api/bills/${bill.id}`, { method: "PATCH", body: { items: lines, advance } });
+      Object.assign(bill, data.bill);
+      lines = bill.items.map((l) => ({ ...l }));
+      editing = false;
+      draw();
+    } catch (e) {
+      errEl.textContent = e.message;
+      errEl.style.display = "block";
+    }
+  }
+
+  async function cancelBill() {
+    if (!confirm("Kya aap ye bill cancel karna chahte hain? Stock wapas restore ho jayega.")) return;
+    try {
+      const data = await api(`/api/bills/${bill.id}`, { method: "DELETE" });
+      Object.assign(bill, data.bill);
+      draw();
+    } catch (e) {
+      alert(e.message);
+    }
+  }
+
+  function doPrint(mode) {
+    const total = computeTotal();
+    const due = total - Number(bill.advance || 0);
+    const area = document.getElementById("print-area");
+    if (mode === "bill") {
+      area.innerHTML = `
+        <div class="print-only">
+          <h2 style="text-align:center;margin-bottom:0">Rays Builders</h2>
+          <p style="text-align:center;font-size:12px;margin-top:4px">Sale &amp; Purchase Bill</p>
+          <hr />
+          <p>Bill No: #${bill.billNo} &nbsp; Date: ${bill.date}</p>
+          <p>Customer: ${escapeHtml(bill.customerName)} ${bill.customerPhone ? "(" + escapeHtml(bill.customerPhone) + ")" : ""}</p>
+          <table><thead><tr><th>Item</th><th>Qty/Sqft</th><th>Rate</th><th>Amount</th></tr></thead>
+          <tbody>${lines.map((l) => `<tr><td>${escapeHtml(l.itemName)}</td><td>${bill.type === "cash" ? l.qty : l.sqft + " sqft"}</td><td>${l.rate}</td><td>${fmtRs(l.amount)}</td></tr>`).join("")}</tbody></table>
+          <p>Total Bill: ${fmtRs(total)}</p>
+          <p>Advance Paid: ${fmtRs(bill.advance)}</p>
+          <p>Baqayajat (Due): ${fmtRs(due)}</p>
+          <p style="text-align:center;margin-top:20px">Thank you for shopping with us!</p>
+        </div>`;
+    } else {
+      area.innerHTML = `
+        <div class="print-only">
+          <h2 style="text-align:center;margin-bottom:0">Rays Builders &mdash; Gate Pass</h2>
+          <hr />
+          <p>Gate Pass No: #${escapeHtml(bill.gatePassNo || bill.billNo)}</p>
+          <p>Bill No: #${bill.billNo} &nbsp; Date: ${bill.date}</p>
+          <p>Customer: ${escapeHtml(bill.customerName)}</p>
+          <table><thead><tr><th>Item</th><th>Qty/Sqft</th></tr></thead>
+          <tbody>${lines.map((l) => `<tr><td>${escapeHtml(l.itemName)}</td><td>${bill.type === "cash" ? l.qty : l.sqft + " sqft"}</td></tr>`).join("")}</tbody></table>
+          <p style="margin-top:30px">Gudam / Labour Signature: ______________</p>
+        </div>`;
+    }
+    setTimeout(() => {
+      window.print();
+      const handler = () => { area.innerHTML = ""; window.removeEventListener("afterprint", handler); };
+      window.addEventListener("afterprint", handler);
+    }, 50);
+  }
+
+  draw();
+}
+
+// ---------- STOCK ----------
+async function renderStock() {
+  const { items } = await api("/api/items");
+  const canManage = CURRENT_USER.role === "admin" || CURRENT_USER.canAddStock;
+  const rows = items.map((item) => {
+    const low = item.stock <= item.lowThreshold;
+    return `
+      <div class="card" data-item-id="${item.id}">
+        <div class="row-between">
+          <div>
+            <strong>${escapeHtml(item.name)}</strong>
+            <p style="font-size:12px;color:var(--text-muted);margin:2px 0 0">${item.type === "measurement" ? "Measurement stock" : "Quantity stock"}</p>
+          </div>
+          <div style="text-align:right">
+            <div>${item.stock} ${item.unit}</div>
+            <span class="badge ${low ? "badge-red" : "badge-green"}">${low ? "Low stock" : "Available"}</span>
+          </div>
+        </div>
+        <div class="row-between" style="margin-top:6px;font-size:12px;color:var(--text-muted)">
+          <span>Rate: ${fmtRs(item.defaultRate)} / ${item.unit}</span>
+          <span>Threshold: ${item.lowThreshold}</span>
+        </div>
+        ${canManage ? `
+          <div style="margin-top:10px" class="stock-in-area">
+            <button class="secondary stock-in-btn">+ Stock In</button>
+          </div>` : ""}
+      </div>
+    `;
+  }).join("");
+  shell(`<p class="card-title">Stock / Inventory</p>${rows}`, "/stock");
+
+  if (canManage) {
+    document.querySelectorAll(".stock-in-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const area = btn.closest(".stock-in-area");
+        const itemId = btn.closest(".card").dataset.itemId;
+        const unit = items.find((i) => i.id === Number(itemId)).unit;
+        area.innerHTML = `
+          <input type="number" placeholder="Add ${unit}" class="stock-qty-input" />
+          <input type="text" placeholder="Supplier ka naam (optional)" class="stock-supplier-input" style="margin-top:6px" />
+          <input type="number" placeholder="Purchase amount / kitna dena hai (optional)" class="stock-amount-input" style="margin-top:6px" />
+          <button class="secondary stock-save-btn" style="margin-top:6px">Save</button>
+        `;
+        area.querySelector(".stock-save-btn").addEventListener("click", async () => {
+          const val = Number(area.querySelector(".stock-qty-input").value) || 0;
+          const supplierName = area.querySelector(".stock-supplier-input").value.trim();
+          const purchaseAmount = Number(area.querySelector(".stock-amount-input").value) || 0;
+          await api(`/api/items/${itemId}`, { method: "PATCH", body: { addStock: val, supplierName, purchaseAmount } });
+          renderStock();
+        });
+      });
+    });
+  }
+}
+
+// ---------- LABOUR ----------
+async function renderLabour() {
+  const [{ labour }, { entries }] = await Promise.all([api("/api/labour"), api("/api/labour-entries")]);
+  const recent = entries.slice(0, 20);
+
+  const options = labour.map((l) => `<option value="${l.id}" data-rate="${l.rate}" data-type="${l.rateType}">${escapeHtml(l.name)} (${l.rateType === "sqft" ? "per sqft" : "daily"})</option>`).join("");
+  const html = `
+    <div class="card">
+      <p class="card-title">Labour Ledger (Majdoor Khata)</p>
+      <label>Worker</label>
+      <select id="lb-worker">${options}</select>
+      <div class="grid-2">
+        <div><label id="lb-qty-label">Sqft kaam</label><input type="number" id="lb-qty" value="0" /></div>
+        <div><label>Rate</label><input type="number" id="lb-rate" value="${labour[0]?.rate || 0}" /></div>
+      </div>
+      <label>Advance / Peshgi Diya</label>
+      <input type="number" id="lb-advance" value="0" />
+      <div class="row-between" style="margin-top:10px"><span>Kul Banta Hai</span><strong id="lb-gross">Rs 0</strong></div>
+      <div class="total-box" style="background:var(--amber-light);color:#7a5a10"><span>Net Payable</span><span id="lb-net">Rs 0</span></div>
+      <p class="error-text" id="lb-error" style="display:none"></p>
+      <button class="primary" id="lb-submit" ${labour.length === 0 ? "disabled" : ""}>Save Labour Entry</button>
+    </div>
+    <div class="card">
+      <p class="card-title">Recent Entries</p>
+      ${recent.length === 0 ? '<p class="center-msg">Koi entry nahi.</p>' : recent.map((e) => `
+        <div class="row-between" style="padding:6px 0;border-bottom:1px solid var(--border)">
+          <div>
+            <div style="font-weight:600;font-size:13px">${escapeHtml(e.labourName)}</div>
+            <div style="font-size:11px;color:var(--text-muted)">${e.date} &middot; ${e.workQty} @ ${e.rate}</div>
+          </div>
+          <strong>${fmtRs(e.netPayable)}</strong>
+        </div>
+      `).join("")}
+    </div>
+  `;
+  shell(html, "/labour");
+
+  const qtyEl = document.getElementById("lb-qty");
+  const rateEl = document.getElementById("lb-rate");
+  const advEl = document.getElementById("lb-advance");
+  const workerEl = document.getElementById("lb-worker");
+  const qtyLabel = document.getElementById("lb-qty-label");
+
+  function recalc() {
+    const gross = (Number(qtyEl.value) || 0) * (Number(rateEl.value) || 0);
+    const net = gross - (Number(advEl.value) || 0);
+    document.getElementById("lb-gross").textContent = fmtRs(gross);
+    document.getElementById("lb-net").textContent = fmtRs(net);
+  }
+  [qtyEl, rateEl, advEl].forEach((el) => el.addEventListener("input", recalc));
+  workerEl?.addEventListener("change", () => {
+    const opt = workerEl.selectedOptions[0];
+    rateEl.value = opt.dataset.rate;
+    qtyLabel.textContent = opt.dataset.type === "daily" ? "Din (days)" : "Sqft kaam";
+    recalc();
+  });
+  recalc();
+
+  document.getElementById("lb-submit")?.addEventListener("click", async () => {
+    const errEl = document.getElementById("lb-error");
+    errEl.style.display = "none";
+    try {
+      await api("/api/labour-entries", {
+        method: "POST",
+        body: { labourId: Number(workerEl.value), workQty: Number(qtyEl.value), rate: Number(rateEl.value), advance: Number(advEl.value) },
+      });
+      renderLabour();
+    } catch (e) {
+      errEl.textContent = e.message;
+      errEl.style.display = "block";
+    }
+  });
+}
+
+// ---------- ADMIN USERS ----------
+const PERMS = [
+  { key: "canDiscount", label: "Can Give Custom Discount" },
+  { key: "canEditBills", label: "Can Edit / Delete Past Invoices Anytime" },
+  { key: "canViewProfit", label: "Can View Total Business Profit" },
+  { key: "canAddStock", label: "Can Add / Adjust Stock" },
+];
+
+async function renderAdminUsers() {
+  if (CURRENT_USER.role !== "admin") { navigate("#/dashboard"); return; }
+  const { users } = await api("/api/users");
+  const staff = users.filter((u) => u.role !== "admin");
+
+  const staffHtml = staff.map((u) => `
+    <div class="card" data-user-id="${u.id}">
+      <strong>${escapeHtml(u.name)}</strong>
+      <p style="font-size:12px;color:var(--text-muted);margin:2px 0 10px">@${escapeHtml(u.username)}</p>
+      ${PERMS.map((p) => `
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text);margin-top:8px">
+          <input type="checkbox" style="width:auto" class="perm-check" data-key="${p.key}" ${u[p.key] ? "checked" : ""} />
+          ${p.label}
+        </label>
+      `).join("")}
+    </div>
+  `).join("");
+
+  const html = `
+    <p class="card-title">User Permissions Settings</p>
+    ${staffHtml || '<p class="center-msg">Koi salesman nahi hai.</p>'}
+    <div class="card">
+      <button class="secondary" id="show-new-user">+ Naya Salesman Add Karein</button>
+      <div id="new-user-form" style="display:none">
+        <label>Naam</label><input id="nu-name" />
+        <label>Username</label><input id="nu-username" />
+        <label>PIN</label><input id="nu-pin" />
+        <p class="error-text" id="nu-error" style="display:none"></p>
+        <button class="primary" id="nu-save">Save</button>
+      </div>
+    </div>
+  `;
+  shell(html, "/admin/users");
+
+  document.querySelectorAll(".card[data-user-id]").forEach((card) => {
+    const userId = card.dataset.userId;
+    card.querySelectorAll(".perm-check").forEach((chk) => {
+      chk.addEventListener("change", async () => {
+        await api(`/api/users/${userId}`, { method: "PATCH", body: { [chk.dataset.key]: chk.checked } });
+      });
+    });
+  });
+
+  document.getElementById("show-new-user").addEventListener("click", () => {
+    document.getElementById("show-new-user").style.display = "none";
+    document.getElementById("new-user-form").style.display = "block";
+  });
+  document.getElementById("nu-save").addEventListener("click", async () => {
+    const errEl = document.getElementById("nu-error");
+    try {
+      await api("/api/users", {
+        method: "POST",
+        body: {
+          name: document.getElementById("nu-name").value,
+          username: document.getElementById("nu-username").value,
+          pin: document.getElementById("nu-pin").value,
+        },
+      });
+      renderAdminUsers();
+    } catch (e) {
+      errEl.textContent = e.message;
+      errEl.style.display = "block";
+    }
+  });
+}
+
+// ---------- REPORTS ----------
+async function renderReports() {
+  if (CURRENT_USER.role !== "admin") { navigate("#/dashboard"); return; }
+  const s = await api("/api/reports/summary");
+  const html = `
+    <div class="card">
+      <p class="card-title">Business Summary</p>
+      <div class="row-between"><span>Cash Sales (total)</span><strong>${fmtRs(s.cashTotal)}</strong></div>
+      <div class="row-between"><span>Paimaish Sales (total)</span><strong>${fmtRs(s.measureTotal)}</strong></div>
+      <div class="row-between" style="border-top:1px solid var(--border);padding-top:8px;margin-top:6px"><span>Grand Total</span><strong>${fmtRs(s.cashTotal + s.measureTotal)}</strong></div>
+      <div class="row-between" style="margin-top:6px"><span>Outstanding Baqayajat</span><strong style="color:var(--red)">${fmtRs(s.totalDue)}</strong></div>
+    </div>
+    <div class="card">
+      <p class="card-title">Labour</p>
+      <div class="row-between"><span>Advance Paid</span><strong>${fmtRs(s.labourPaid)}</strong></div>
+      <div class="row-between"><span>Net Payable Outstanding</span><strong>${fmtRs(s.labourPending)}</strong></div>
+    </div>
+    <div class="card">
+      <p class="card-title">Audit Log (Recent)</p>
+      ${s.auditLog.map((a) => `
+        <div style="font-size:12px;padding:6px 0;border-bottom:1px solid var(--border)">
+          <div style="color:var(--text-muted)">${new Date(a.timestamp).toLocaleString()} &middot; ${escapeHtml(a.userName)}</div>
+          <div>${escapeHtml(a.detail)}</div>
+        </div>
+      `).join("")}
+    </div>
+  `;
+  shell(html, "/reports");
+}
+
+// ---------- SCAN PARCHI ----------
+async function renderScan() {
+  const settings = readSettings();
+  const hasKey = !!(settings.claudeApiKey || "").trim();
+
+  const html = `
+    <div class="card">
+      <p class="card-title">Scan Parchi (AI Scanner)</p>
+      ${!hasKey ? `
+        <p style="font-size:13px;color:var(--text-muted)">
+          Ye feature use karne ke liye pehle aik Claude API key Settings mein save karni hogi.
+        </p>
+        <a href="#/settings" class="secondary" style="display:block;text-align:center;padding:10px;border:1px solid var(--border);border-radius:8px;margin-top:8px">Settings Mein Jayein</a>
+      ` : `
+        <p style="font-size:13px;color:var(--text-muted);margin-bottom:10px">
+          Gate pass / parchi ki photo khinchein, AI khud customer, gate pass number aur paimaish nikal ke form bhar dega.
+          Save karne se pehle verify kar lein.
+        </p>
+        <input type="file" id="scan-file" accept="image/*" capture="environment" style="display:none" />
+        <button class="primary" id="scan-open-camera" style="margin-top:0">Photo Kheenchein</button>
+        <div id="scan-preview-area"></div>
+        <p class="error-text" id="scan-error" style="display:none"></p>
+      `}
+    </div>
+  `;
+  shell(html, "/scan");
+
+  if (!hasKey) return;
+
+  const fileInput = document.getElementById("scan-file");
+  const openBtn = document.getElementById("scan-open-camera");
+  const previewArea = document.getElementById("scan-preview-area");
+  const errEl = document.getElementById("scan-error");
+
+  openBtn.addEventListener("click", () => fileInput.click());
+
+  fileInput.addEventListener("change", () => {
+    const file = fileInput.files[0];
+    if (!file) return;
+    errEl.style.display = "none";
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = reader.result;
+      const mediaType = file.type || "image/jpeg";
+      const base64 = dataUrl.split(",")[1];
+      previewArea.innerHTML = `
+        <img src="${dataUrl}" style="width:100%;border-radius:8px;margin-top:10px" />
+        <button class="primary" id="scan-go">Scan Karein</button>
+        <button class="secondary" id="scan-retake">Dobara Photo Lein</button>
+      `;
+      document.getElementById("scan-retake").addEventListener("click", () => {
+        previewArea.innerHTML = "";
+        fileInput.value = "";
+      });
+      document.getElementById("scan-go").addEventListener("click", async () => {
+        const goBtn = document.getElementById("scan-go");
+        goBtn.disabled = true;
+        goBtn.textContent = "Scan ho raha hai...";
+        errEl.style.display = "none";
+        try {
+          const result = await scanParchiImage(base64, mediaType);
+          PENDING_SCAN_DRAFT = result;
+          navigate("#/bills/new?type=measurement");
+        } catch (e) {
+          errEl.textContent = e.message;
+          errEl.style.display = "block";
+          goBtn.disabled = false;
+          goBtn.textContent = "Scan Karein";
+        }
+      });
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+// ---------- SETTINGS ----------
+async function renderSettings() {
+  if (CURRENT_USER.role !== "admin") { navigate("#/dashboard"); return; }
+  const settings = readSettings();
+
+  const html = `
+    <div class="card">
+      <p class="card-title">Parchi Scanner Settings</p>
+      <p style="font-size:13px;color:var(--text-muted)">
+        Scan Parchi feature Claude ki AI Vision use karti hai. Iske liye aapki apni
+        Anthropic API key chahiye (console.anthropic.com se free bana sakte hain,
+        thoda sa credit add karna hoga). Ye key sirf isi browser mein save hoti hai,
+        kahin aur nahi jati - seedha aapke browser se Claude ko bhejī jati hai.
+      </p>
+      <label>Claude API Key</label>
+      <input id="settings-key" type="password" value="${escapeHtml(settings.claudeApiKey || "")}" placeholder="sk-ant-..." autocomplete="off" />
+      <p class="error-text" id="settings-msg" style="display:none;color:var(--green)"></p>
+      <button class="primary" id="settings-save">Save Karein</button>
+      ${settings.claudeApiKey ? '<button class="danger" id="settings-clear">Key Remove Karein</button>' : ""}
+    </div>
+  `;
+  shell(html, "/settings");
+
+  document.getElementById("settings-save").addEventListener("click", () => {
+    const key = document.getElementById("settings-key").value.trim();
+    writeSettings({ claudeApiKey: key });
+    const msg = document.getElementById("settings-msg");
+    msg.style.color = "var(--green)";
+    msg.textContent = "Save ho gaya.";
+    msg.style.display = "block";
+  });
+
+  const clearBtn = document.getElementById("settings-clear");
+  if (clearBtn) {
+    clearBtn.addEventListener("click", () => {
+      writeSettings({ claudeApiKey: "" });
+      renderSettings();
+    });
+  }
+}
+
+// ---------- ACCOUNTS HUB (Khata) ----------
+async function renderAccountsHub() {
+  const html = `
+    <p class="card-title">Khata / Accounts</p>
+    <a href="#/customers" class="card" style="display:block;text-decoration:none;color:inherit">
+      <div class="row-between"><strong>Customers Ledger</strong><span>&rarr;</span></div>
+      <p style="font-size:12px;color:var(--text-muted);margin:4px 0 0">Har customer ka baqaya dekhein</p>
+    </a>
+    <a href="#/suppliers" class="card" style="display:block;text-decoration:none;color:inherit">
+      <div class="row-between"><strong>Suppliers Ledger</strong><span>&rarr;</span></div>
+      <p style="font-size:12px;color:var(--text-muted);margin:4px 0 0">Suppliers ko kitna dena hai</p>
+    </a>
+    <a href="#/vouchers" class="card" style="display:block;text-decoration:none;color:inherit">
+      <div class="row-between"><strong>Receipt / Payment Voucher</strong><span>&rarr;</span></div>
+      <p style="font-size:12px;color:var(--text-muted);margin:4px 0 0">Payment li ya di, entry karein</p>
+    </a>
+    <a href="#/daybook" class="card" style="display:block;text-decoration:none;color:inherit">
+      <div class="row-between"><strong>Day Book</strong><span>&rarr;</span></div>
+      <p style="font-size:12px;color:var(--text-muted);margin:4px 0 0">Aaj ki tamam entries aik jagah</p>
+    </a>
+    <a href="#/cashbook" class="card" style="display:block;text-decoration:none;color:inherit">
+      <div class="row-between"><strong>Cash Book</strong><span>&rarr;</span></div>
+      <p style="font-size:12px;color:var(--text-muted);margin:4px 0 0">Cash in/out running balance</p>
+    </a>
+  `;
+  shell(html, "/accounts");
+}
+
+// ---------- CUSTOMERS ----------
+async function renderCustomers() {
+  const { customers } = await api("/api/customers");
+  const sorted = [...customers].sort((a, b) => b.balance - a.balance);
+  const rows = sorted.map((c) => `
+    <a href="#/customers/${c.id}" class="card" style="display:block;text-decoration:none;color:inherit">
+      <div class="row-between">
+        <div>
+          <strong>${escapeHtml(c.name)}</strong>
+          <p style="font-size:12px;color:var(--text-muted);margin:2px 0 0">${escapeHtml(c.phone || "")}</p>
+        </div>
+        <strong style="color:${c.balance > 0 ? "var(--red)" : "var(--green)"}">${fmtRs(c.balance)}</strong>
+      </div>
+    </a>
+  `).join("");
+  const html = `
+    <p class="card-title">Customers Ledger</p>
+    <div class="card">
+      <button class="secondary" id="cust-new-btn">+ Naya Customer</button>
+      <div id="cust-new-form" style="display:none;margin-top:10px">
+        <label>Naam</label><input id="cn-name" />
+        <label>Phone</label><input id="cn-phone" />
+        <p class="error-text" id="cn-error" style="display:none"></p>
+        <button class="primary" id="cn-save">Save</button>
+      </div>
+    </div>
+    ${rows || '<p class="center-msg">Koi customer nahi hai.</p>'}
+  `;
+  shell(html, "/customers");
+
+  document.getElementById("cust-new-btn").addEventListener("click", () => {
+    document.getElementById("cust-new-btn").style.display = "none";
+    document.getElementById("cust-new-form").style.display = "block";
+  });
+  document.getElementById("cn-save").addEventListener("click", async () => {
+    const errEl = document.getElementById("cn-error");
+    try {
+      await api("/api/customers", { method: "POST", body: { name: document.getElementById("cn-name").value, phone: document.getElementById("cn-phone").value } });
+      renderCustomers();
+    } catch (e) {
+      errEl.textContent = e.message;
+      errEl.style.display = "block";
+    }
+  });
+}
+
+async function renderCustomerDetail(id) {
+  const { customer, ledger, balance } = await api(`/api/customers/${id}`);
+  const rows = [...ledger].reverse().map((l) => `
+    <div class="row-between" style="padding:6px 0;border-bottom:1px solid var(--border)">
+      <div>
+        <div style="font-weight:600;font-size:13px">${escapeHtml(l.note || (l.type === "charge" ? "Bill" : "Payment"))}</div>
+        <div style="font-size:11px;color:var(--text-muted)">${l.date}</div>
+      </div>
+      <strong style="color:${l.type === "charge" ? "var(--red)" : "var(--green)"}">${l.type === "charge" ? "+" : "-"}${fmtRs(l.amount)}</strong>
+    </div>
+  `).join("");
+  const html = `
+    <div class="card">
+      <div class="row-between">
+        <div>
+          <strong style="font-size:16px">${escapeHtml(customer.name)}</strong>
+          <p style="font-size:12px;color:var(--text-muted);margin:2px 0 0">${escapeHtml(customer.phone || "")}</p>
+        </div>
+        <a href="#/vouchers?partyType=customer&partyId=${customer.id}&partyName=${encodeURIComponent(customer.name)}" class="secondary" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;text-decoration:none;color:inherit;font-size:13px">Receipt Lein</a>
+      </div>
+      <div class="total-box" style="margin-top:10px"><span>Baqaya (Balance)</span><span>${fmtRs(balance)}</span></div>
+    </div>
+    <div class="card">
+      <p class="card-title">Ledger</p>
+      ${rows || '<p class="center-msg">Koi entry nahi.</p>'}
+    </div>
+  `;
+  shell(html, "/customers");
+}
+
+// ---------- SUPPLIERS ----------
+async function renderSuppliers() {
+  const { suppliers } = await api("/api/suppliers");
+  const sorted = [...suppliers].sort((a, b) => b.balance - a.balance);
+  const rows = sorted.map((s) => `
+    <a href="#/suppliers/${s.id}" class="card" style="display:block;text-decoration:none;color:inherit">
+      <div class="row-between">
+        <div>
+          <strong>${escapeHtml(s.name)}</strong>
+          <p style="font-size:12px;color:var(--text-muted);margin:2px 0 0">${escapeHtml(s.phone || "")}</p>
+        </div>
+        <strong style="color:${s.balance > 0 ? "var(--red)" : "var(--green)"}">${fmtRs(s.balance)}</strong>
+      </div>
+    </a>
+  `).join("");
+  const isAdmin = CURRENT_USER.role === "admin";
+  const html = `
+    <p class="card-title">Suppliers Ledger</p>
+    ${isAdmin ? `
+    <div class="card">
+      <button class="secondary" id="sup-new-btn">+ Naya Supplier</button>
+      <div id="sup-new-form" style="display:none;margin-top:10px">
+        <label>Naam</label><input id="sn-name" />
+        <label>Phone</label><input id="sn-phone" />
+        <p class="error-text" id="sn-error" style="display:none"></p>
+        <button class="primary" id="sn-save">Save</button>
+      </div>
+    </div>` : ""}
+    ${rows || '<p class="center-msg">Koi supplier nahi hai.</p>'}
+  `;
+  shell(html, "/suppliers");
+
+  if (!isAdmin) return;
+  document.getElementById("sup-new-btn").addEventListener("click", () => {
+    document.getElementById("sup-new-btn").style.display = "none";
+    document.getElementById("sup-new-form").style.display = "block";
+  });
+  document.getElementById("sn-save").addEventListener("click", async () => {
+    const errEl = document.getElementById("sn-error");
+    try {
+      await api("/api/suppliers", { method: "POST", body: { name: document.getElementById("sn-name").value, phone: document.getElementById("sn-phone").value } });
+      renderSuppliers();
+    } catch (e) {
+      errEl.textContent = e.message;
+      errEl.style.display = "block";
+    }
+  });
+}
+
+async function renderSupplierDetail(id) {
+  const { supplier, ledger, balance } = await api(`/api/suppliers/${id}`);
+  const rows = [...ledger].reverse().map((l) => `
+    <div class="row-between" style="padding:6px 0;border-bottom:1px solid var(--border)">
+      <div>
+        <div style="font-weight:600;font-size:13px">${escapeHtml(l.note || (l.type === "charge" ? "Purchase" : "Payment"))}</div>
+        <div style="font-size:11px;color:var(--text-muted)">${l.date}</div>
+      </div>
+      <strong style="color:${l.type === "charge" ? "var(--red)" : "var(--green)"}">${l.type === "charge" ? "+" : "-"}${fmtRs(l.amount)}</strong>
+    </div>
+  `).join("");
+  const html = `
+    <div class="card">
+      <div class="row-between">
+        <div>
+          <strong style="font-size:16px">${escapeHtml(supplier.name)}</strong>
+          <p style="font-size:12px;color:var(--text-muted);margin:2px 0 0">${escapeHtml(supplier.phone || "")}</p>
+        </div>
+        <a href="#/vouchers?partyType=supplier&partyId=${supplier.id}&partyName=${encodeURIComponent(supplier.name)}" class="secondary" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;text-decoration:none;color:inherit;font-size:13px">Payment Dein</a>
+      </div>
+      <div class="total-box" style="margin-top:10px;background:var(--amber-light);color:#7a5a10"><span>Baqaya (Dena Hai)</span><span>${fmtRs(balance)}</span></div>
+    </div>
+    <div class="card">
+      <p class="card-title">Ledger</p>
+      ${rows || '<p class="center-msg">Koi entry nahi.</p>'}
+    </div>
+  `;
+  shell(html, "/suppliers");
+}
+
+// ---------- VOUCHERS ----------
+async function renderVoucherNew(query) {
+  const [{ customers }, { suppliers }, { vouchers }] = await Promise.all([
+    api("/api/customers"), api("/api/suppliers"), api("/api/vouchers"),
+  ]);
+  const presetType = query && query.partyType;
+  const presetId = query && query.partyId;
+  const presetName = query && query.partyName;
+
+  const custOptions = customers.map((c) => `<option value="${c.id}" ${presetType === "customer" && String(presetId) === String(c.id) ? "selected" : ""}>${escapeHtml(c.name)} (${fmtRs(c.balance)})</option>`).join("");
+  const supOptions = suppliers.map((s) => `<option value="${s.id}" ${presetType === "supplier" && String(presetId) === String(s.id) ? "selected" : ""}>${escapeHtml(s.name)} (${fmtRs(s.balance)})</option>`).join("");
+
+  const recent = vouchers.slice(0, 15);
+
+  const html = `
+    <div class="card">
+      <p class="card-title">Receipt / Payment Voucher</p>
+      <div class="type-toggle">
+        <button class="v-type-btn active receipt" data-type="receipt">Receipt (Wasooli)</button>
+        <button class="v-type-btn payment" data-type="payment">Payment (Ada)</button>
+      </div>
+      <label>Party Type</label>
+      <select id="v-party-type">
+        <option value="customer" ${presetType !== "supplier" ? "selected" : ""}>Customer</option>
+        <option value="supplier" ${presetType === "supplier" ? "selected" : ""}>Supplier</option>
+        <option value="other">General / Other</option>
+      </select>
+      <div id="v-customer-wrap">
+        <label>Customer</label>
+        <select id="v-customer-select"><option value="">-- Select --</option>${custOptions}</select>
+      </div>
+      <div id="v-supplier-wrap" style="display:none">
+        <label>Supplier</label>
+        <select id="v-supplier-select"><option value="">-- Select --</option>${supOptions}</select>
+      </div>
+      <div id="v-other-wrap" style="display:none">
+        <label>Naam</label>
+        <input id="v-other-name" placeholder="Party ka naam (optional)" />
+      </div>
+      <label>Amount</label>
+      <input type="number" id="v-amount" placeholder="0" />
+      <label>Method</label>
+      <select id="v-method">
+        <option value="cash">Cash</option>
+        <option value="bank">Bank</option>
+      </select>
+      <label>Note (optional)</label>
+      <input id="v-note" placeholder="Tafseel" />
+      <p class="error-text" id="v-error" style="display:none"></p>
+      <button class="primary" id="v-save">Voucher Save Karein</button>
+    </div>
+    <div class="card">
+      <p class="card-title">Recent Vouchers</p>
+      ${recent.length === 0 ? '<p class="center-msg">Koi voucher nahi.</p>' : recent.map((v) => `
+        <div class="row-between" style="padding:6px 0;border-bottom:1px solid var(--border)">
+          <div>
+            <div style="font-weight:600;font-size:13px">#${v.voucherNo} - ${escapeHtml(v.partyName || "General")}</div>
+            <div style="font-size:11px;color:var(--text-muted)">${v.date} &middot; ${v.type === "receipt" ? "Receipt" : "Payment"} &middot; ${v.method}</div>
+          </div>
+          <strong style="color:${v.type === "receipt" ? "var(--green)" : "var(--red)"}">${fmtRs(v.amount)}</strong>
+        </div>
+      `).join("")}
+    </div>
+  `;
+  shell(html, "/vouchers");
+
+  let currentType = "receipt";
+  document.querySelectorAll(".v-type-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".v-type-btn").forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+      currentType = btn.dataset.type;
+    });
+  });
+
+  const partyTypeEl = document.getElementById("v-party-type");
+  const custWrap = document.getElementById("v-customer-wrap");
+  const supWrap = document.getElementById("v-supplier-wrap");
+  const otherWrap = document.getElementById("v-other-wrap");
+  function togglePartyWrap() {
+    custWrap.style.display = partyTypeEl.value === "customer" ? "block" : "none";
+    supWrap.style.display = partyTypeEl.value === "supplier" ? "block" : "none";
+    otherWrap.style.display = partyTypeEl.value === "other" ? "block" : "none";
+  }
+  partyTypeEl.addEventListener("change", togglePartyWrap);
+  togglePartyWrap();
+  if (presetType === "supplier") { document.querySelectorAll(".v-type-btn").forEach((b) => b.classList.remove("active")); document.querySelector('.v-type-btn[data-type="payment"]').classList.add("active"); currentType = "payment"; }
+
+  document.getElementById("v-save").addEventListener("click", async () => {
+    const errEl = document.getElementById("v-error");
+    errEl.style.display = "none";
+    const partyType = partyTypeEl.value;
+    let partyId = null, partyName = "";
+    if (partyType === "customer") {
+      const sel = document.getElementById("v-customer-select");
+      partyId = sel.value || null;
+      partyName = sel.selectedOptions[0] ? sel.selectedOptions[0].textContent.replace(/\s*\(Rs[^)]*\)$/, "") : "";
+    } else if (partyType === "supplier") {
+      const sel = document.getElementById("v-supplier-select");
+      partyId = sel.value || null;
+      partyName = sel.selectedOptions[0] ? sel.selectedOptions[0].textContent.replace(/\s*\(Rs[^)]*\)$/, "") : "";
+    } else {
+      partyName = document.getElementById("v-other-name").value;
+    }
+    const amount = Number(document.getElementById("v-amount").value) || 0;
+    try {
+      await api("/api/vouchers", {
+        method: "POST",
+        body: { type: currentType, partyType, partyId, partyName, amount, method: document.getElementById("v-method").value, note: document.getElementById("v-note").value },
+      });
+      navigate(partyType === "customer" && partyId ? `#/customers/${partyId}` : partyType === "supplier" && partyId ? `#/suppliers/${partyId}` : "#/vouchers");
+      if (!(partyId)) renderVoucherNew({});
+    } catch (e) {
+      errEl.textContent = e.message;
+      errEl.style.display = "block";
+    }
+  });
+}
+
+// ---------- DAY BOOK ----------
+async function renderDayBook(query) {
+  const date = (query && query.date) || todayStr();
+  const { rows } = await api(`/api/daybook?date=${date}`);
+  const totalIn = rows.filter((r) => r.direction === "in").reduce((s, r) => s + r.amount, 0);
+  const totalOut = rows.filter((r) => r.direction === "out").reduce((s, r) => s + r.amount, 0);
+  const rowsHtml = rows.map((r) => `
+    <div class="row-between" style="padding:6px 0;border-bottom:1px solid var(--border)">
+      <div>
+        <div style="font-weight:600;font-size:13px">${escapeHtml(r.label)}</div>
+        <div style="font-size:11px;color:var(--text-muted)">${escapeHtml(r.detail || "")}</div>
+      </div>
+      <strong style="color:${r.direction === "in" ? "var(--green)" : "var(--red)"}">${r.direction === "in" ? "+" : "-"}${fmtRs(r.amount)}</strong>
+    </div>
+  `).join("");
+  const html = `
+    <div class="card">
+      <p class="card-title">Day Book</p>
+      <input type="date" id="db-date" value="${date}" />
+    </div>
+    <div class="card">
+      <div class="row-between"><span>Total In</span><strong style="color:var(--green)">${fmtRs(totalIn)}</strong></div>
+      <div class="row-between" style="margin-top:6px"><span>Total Out</span><strong style="color:var(--red)">${fmtRs(totalOut)}</strong></div>
+    </div>
+    <div class="card">
+      ${rowsHtml || '<p class="center-msg">Is din koi entry nahi.</p>'}
+    </div>
+  `;
+  shell(html, "/daybook");
+
+  document.getElementById("db-date").addEventListener("change", (e) => {
+    navigate(`#/daybook?date=${e.target.value}`);
+  });
+}
+
+// ---------- CASH BOOK ----------
+async function renderCashBook() {
+  const { rows, totalIn, totalOut, balance } = await api("/api/cashbook");
+  const rowsHtml = [...rows].reverse().map((r) => `
+    <div class="row-between" style="padding:6px 0;border-bottom:1px solid var(--border)">
+      <div>
+        <div style="font-weight:600;font-size:13px">#${r.voucherNo} - ${escapeHtml(r.partyName || "General")}</div>
+        <div style="font-size:11px;color:var(--text-muted)">${r.date} &middot; ${r.type === "receipt" ? "Receipt" : "Payment"}</div>
+      </div>
+      <div style="text-align:right">
+        <strong style="color:${r.type === "receipt" ? "var(--green)" : "var(--red)"}">${r.type === "receipt" ? "+" : "-"}${fmtRs(r.amount)}</strong>
+        <div style="font-size:11px;color:var(--text-muted)">Balance: ${fmtRs(r.runningBalance)}</div>
+      </div>
+    </div>
+  `).join("");
+  const html = `
+    <div class="card">
+      <p class="card-title">Cash Book</p>
+      <div class="row-between"><span>Total In</span><strong style="color:var(--green)">${fmtRs(totalIn)}</strong></div>
+      <div class="row-between" style="margin-top:6px"><span>Total Out</span><strong style="color:var(--red)">${fmtRs(totalOut)}</strong></div>
+      <div class="total-box" style="margin-top:10px"><span>Cash Balance</span><span>${fmtRs(balance)}</span></div>
+    </div>
+    <div class="card">
+      ${rowsHtml || '<p class="center-msg">Koi cash voucher nahi.</p>'}
+    </div>
+  `;
+  shell(html, "/cashbook");
+}
+
+// ---------- ROUTER ----------
+async function route() {
+  const { path, query } = parseHash();
+
+  if (!CURRENT_USER) {
+    try {
+      const data = await api("/api/auth/me");
+      CURRENT_USER = data.user;
+    } catch (e) {}
+  }
+
+  if (path !== "/login" && !CURRENT_USER) { renderLogin(); return; }
+  if (path === "/login" && CURRENT_USER) { navigate("#/dashboard"); return; }
+
+  try {
+    if (path === "/login") return renderLogin();
+    if (path === "/dashboard" || path === "/") return await renderDashboard();
+    if (path === "/bills/new") return await renderBillNew(query.type);
+    if (path === "/bills") return await renderBillsList();
+    const billDetailMatch = path.match(/^\/bills\/(\d+)$/);
+    if (billDetailMatch) return await renderBillDetail(Number(billDetailMatch[1]));
+    if (path === "/stock") return await renderStock();
+    if (path === "/labour") return await renderLabour();
+    if (path === "/admin/users") return await renderAdminUsers();
+    if (path === "/reports") return await renderReports();
+    if (path === "/scan") return await renderScan();
+    if (path === "/settings") return await renderSettings();
+    if (path === "/accounts") return await renderAccountsHub();
+    if (path === "/customers") return await renderCustomers();
+    const custDetailMatch = path.match(/^\/customers\/(\d+)$/);
+    if (custDetailMatch) return await renderCustomerDetail(Number(custDetailMatch[1]));
+    if (path === "/suppliers") return await renderSuppliers();
+    const supDetailMatch = path.match(/^\/suppliers\/(\d+)$/);
+    if (supDetailMatch) return await renderSupplierDetail(Number(supDetailMatch[1]));
+    if (path === "/vouchers") return await renderVoucherNew(query);
+    if (path === "/daybook") return await renderDayBook(query);
+    if (path === "/cashbook") return await renderCashBook();
+    navigate("#/dashboard");
+  } catch (e) {
+    root.innerHTML = `<div class="app-shell"><div class="content"><p class="error-text">${escapeHtml(e.message)}</p></div></div>`;
+  }
+}
+
+window.addEventListener("hashchange", route);
+window.addEventListener("DOMContentLoaded", () => {
+  seedIfEmpty();
+  route();
+});
+</script>
+</body>
+</html>
